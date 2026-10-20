@@ -272,7 +272,7 @@ button.hang{ background: var(--hang); border-color: rgba(255,190,180,.55); color
       <label>壁纸</label>
       <div id="walls"></div>
       <label for="fRepo">存对话的私有仓库</label>
-      <input id="fRepo" autocomplete="off" spellcheck="false" placeholder="Jenniferrr7/voice-call-data">
+      <input id="fRepo" autocomplete="off" spellcheck="false" placeholder="Jenniferrr7/voice-call-data-">
       <label for="fGh">GitHub 令牌</label>
       <input id="fGh" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…">
       <label for="fEl">ElevenLabs key（不填就用手机自带的声音）</label>
@@ -594,7 +594,7 @@ var WALLS = {
   function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
 
   // ---------- 设置 ----------
-  var CFG = { repo: 'Jenniferrr7/voice-call-data', gh: '', el: '', voice: '', wall: 'valley', music: false };
+  var CFG = { repo: 'Jenniferrr7/voice-call-data-', gh: '', el: '', voice: '', wall: 'valley', music: false };
   try { var saved = JSON.parse(store('call.cfg') || '{}'); for (var k in CFG) if (saved[k] !== undefined && saved[k] !== '') CFG[k] = saved[k]; } catch (e) {}
   if (!WALLS[CFG.wall]) CFG.wall = 'valley';
   function saveCfg() { store('call.cfg', JSON.stringify(CFG)); }
@@ -634,7 +634,7 @@ var WALLS = {
   $('setupClose').addEventListener('click', function () { openSheet(setup, false); });
   $('setupForm').addEventListener('submit', function (ev) {
     ev.preventDefault();
-    CFG.repo = $('fRepo').value.trim() || 'Jenniferrr7/voice-call-data';
+    CFG.repo = $('fRepo').value.trim() || 'Jenniferrr7/voice-call-data-';
     CFG.gh = $('fGh').value.trim(); CFG.el = $('fEl').value.trim(); CFG.voice = $('fVoice').value.trim();
     saveCfg();
     $('setupNote').textContent = '已保存。';
