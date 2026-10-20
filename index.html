@@ -18,7 +18,7 @@
   --head-ink: #F6F0E0; --head-dim: #C6BEAC; --head-bg: 8,8,4;
   --foot-bg: 8,8,4; --state-ink: #C6BEAC;
   --btn-bg: rgba(10,10,6,.42); --btn-line: rgba(246,240,224,.26);
-  --hang: rgba(120,16,42,.5);
+  --hang: rgba(226,86,80,.62);
   --sheet: rgba(9,9,5,.92); --sheet-line: rgba(249,222,131,.22);
   --lab-ke: #F9DE83; --lab-hua: #FC808A;
   --hold: rgba(252,128,138,.35);
@@ -151,7 +151,7 @@ button{
 }
 button:active{ transform: scale(.96); }
 button:focus-visible{ outline: 2px solid var(--a1); outline-offset: 3px; }
-button.hang{ background: var(--hang); border-color: rgba(255,140,160,.45); }
+button.hang{ background: var(--hang); border-color: rgba(255,190,180,.55); color: #FFF6F2; }
 #hold{
   flex: 1 1 auto; max-width: 260px; padding: 15px 10px; font-size: 1rem; letter-spacing: .3em;
   -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: none;
@@ -322,13 +322,13 @@ var WALLS = {
     name: '公路', src: 'wallpapers/road.jpg', thumb: 'wallpapers/road-s.jpg', w: 1202, h: 1600,
     bright: .86, keTop: '40%', huaTop: '76%', fx: 'rays',
     colors: {
-      '--a1': '#FFD08A', '--a2': '#F48C5C', '--bubble-ink': '#2A1306',
+      '--a1': '#F2F7FF', '--a2': '#A9C8EC', '--bubble-ink': '#132A48',
       '--ke-ink': '#13233A', '--ke-zh': '#22344E', '--ke-h': '255,248,236',
       '--hua-ink': '#FFF4E6', '--hua-dim': '#E6D6C2', '--hua-h': '14,16,22',
       '--head-bg': '20,34,58', '--foot-bg': '12,16,24', '--state-ink': '#E9DCCB',
       '--btn-bg': 'rgba(16,26,44,.48)', '--btn-line': 'rgba(255,220,180,.32)',
-      '--sheet': 'rgba(12,18,30,.93)', '--sheet-line': 'rgba(255,200,140,.25)',
-      '--lab-ke': '#FFC27A', '--lab-hua': '#9CC3F0', '--hold': 'rgba(244,140,92,.35)',
+      '--sheet': 'rgba(12,18,30,.93)', '--sheet-line': 'rgba(180,208,240,.28)',
+      '--lab-ke': '#B9D3F2', '--lab-hua': '#F6C79A', '--hold': 'rgba(169,200,236,.36)',
       '--fog': 'rgba(255,248,236,.38)', '--fog-blur': '4px'
     },
     glowKe: 'radial-gradient(80% 44% at 74% 32%, rgba(255,196,120,.55) 0%, transparent 62%), radial-gradient(70% 40% at 60% 22%, rgba(255,235,200,.28) 0%, transparent 70%)',
