@@ -648,13 +648,15 @@ var WALLS = {
 
   // ---------- 背景音乐：默认关；我说话时压低，她按住说话时停 ----------
   var bgm = new Audio('music/bgm.mp3');
+  bgm.preload = 'auto';
+  bgm.addEventListener('error', function () { status('音乐文件没加载出来 · 梯子切全局再刷新'); });
   bgm.loop = true; bgm.volume = .35;
   var duck = 0;                                   // 0 正常；1 压低（我在说）；2 停（她在说）
   function musicSync() {
     musicBtn.setAttribute('aria-pressed', String(!!CFG.music));
     if (!CFG.music || duck === 2) { bgm.pause(); return; }
     bgm.volume = duck === 1 ? .08 : .35;
-    bgm.play().catch(function () {});
+    bgm.play().catch(function (e) { status('音乐放不出来（' + e.name + '）· 再点一下 ♪ 试试'); });
   }
   musicBtn.addEventListener('click', function () { CFG.music = !CFG.music; saveCfg(); musicSync(); });
   musicBtn.setAttribute('aria-pressed', String(!!CFG.music));
@@ -881,10 +883,11 @@ var WALLS = {
 
   // ---------- 按住说话 ----------
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  var rec = null, holding = false, finals = [], interim = '', downAt = 0, cancelled = false, startY = 0;
+  var rec = null, holding = false, finals = [], interim = '', downAt = 0, cancelled = false, startY = 0, recErr = '', heard = false;
   function startRec() {
     rec = new SR();
     rec.lang = 'zh-CN'; rec.continuous = true; rec.interimResults = true;
+    rec.onaudiostart = function () { heard = true; status('在听 · 上滑取消'); };
     rec.onresult = function (ev) {
       var part = '';
       for (var i = ev.resultIndex; i < ev.results.length; i++) {
@@ -895,15 +898,24 @@ var WALLS = {
       showHer(finals.join('') + interim, true);
     };
     rec.onerror = function (ev) {
-      if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed') { holding = false; status('麦克风没给权限 · 在浏览器设置里允许'); }
-      else if (ev.error === 'network') status('语音识别连不上 · 梯子切到全局试试');
+      recErr = ev.error || 'unknown';
+      if (recErr === 'not-allowed' || recErr === 'service-not-allowed') holding = false;
     };
     rec.onend = function () {
       if (holding) { try { startRec(); } catch (e) {} return; }   // 还按着就接着听（安卓会自己断）
       finish();
     };
-    try { rec.start(); } catch (e) {}
+    try { rec.start(); } catch (e) { recErr = 'start:' + e.name; }
   }
+  var ERR = {
+    'network': '语音识别连不上谷歌 · 梯子切到全局再试',
+    'not-allowed': '麦克风没给权限 · 点网址左边的图标，把麦克风打开',
+    'service-not-allowed': '这台手机的谷歌语音服务用不了',
+    'no-speech': '没听到声音 · 离手机近一点再说',
+    'audio-capture': '麦克风被别的应用占着',
+    'aborted': '识别被打断了 · 再按住说一次',
+    'language-not-supported': '谷歌语音不支持中文识别'
+  };
   function showHer(text, partial) {
     sayHua.classList.toggle('partial', !!partial);
     sayHua.textContent = text;
@@ -916,7 +928,13 @@ var WALLS = {
     holdBtn.textContent = '按住 说话';
     duck = 0; musicSync();
     if (cancelled) { showHer('', false); status('取消了'); lightOff(); return; }
-    if (!text) { showHer('', false); status(Date.now() - downAt < 600 ? '按久一点再说' : '没听清 · 再按住说一次'); lightOff(); return; }
+    if (!text) {
+      showHer('', false);
+      if (recErr) status((ERR[recErr] || '没听清') + '（' + recErr + '）');
+      else if (Date.now() - downAt < 600) status('按久一点再说');
+      else status(heard ? '听到声音了，但没认出字 · 再说一次' : '麦克风没打开 · 再按住试试');
+      lightOff(); return;
+    }
     showHer(text, false);
     her.lines.push(text);
     record('hua', text);
@@ -929,11 +947,11 @@ var WALLS = {
     if (!SR) { status('这个浏览器听不了 · 用安卓 Chrome 打开'); return; }
     stopPlay();
     duck = 2; musicSync();
-    holding = true; cancelled = false; finals = []; interim = ''; downAt = Date.now();
+    holding = true; cancelled = false; finals = []; interim = ''; downAt = Date.now(); recErr = ''; heard = false;
     startY = ev.clientY || 0;
     try { holdBtn.setPointerCapture(ev.pointerId); } catch (e) {}
     holdBtn.classList.add('down'); holdBtn.textContent = '松开 发送';
-    status('在听 · 上滑取消');
+    status('打开麦克风…');
     light('hua');
     sayKe.classList.remove('on');
     showHer('', true);
