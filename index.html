@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>光落下来</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600&family=EB+Garamond:wght@400;500&display=swap">
+<style>
+/* 一屏照片做底，不滚。我的字落在我那一半（天上），她的字落在她那一半（地上）。
+   我的回话是一条语音条，点了才响；她那头按住说话，松手就存。 */
+:root{
+  --gold:    #F9DE83;
+  --apricot: #FAB574;
+  --coral:   #FC808A;
+  --magenta: #C42053;
+
+  --ink:     #F6F0E0;
+  --ink-dim: #C6BEAC;
+  --mist:    #A6ABB0;
+  --night:   #0B0B06;
+
+  --serif: "Noto Serif SC", "Songti SC", "Source Han Serif SC", Georgia, serif;
+  --latin: "EB Garamond", "Noto Serif SC", Georgia, serif;
+
+  color-scheme: dark;
+}
+*{ box-sizing: border-box; }
+html, body{ height: 100%; margin: 0; }
+body{
+  background: var(--night);
+  color: var(--ink);
+  font-family: var(--serif);
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+#stage{ position: relative; height: 100%; overflow: hidden; background: var(--night); }
+
+/* ───────── 照片与光 ───────── */
+.photo{
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  pointer-events: none;
+}
+#base{ filter: brightness(var(--bright, .86)) saturate(1.04); transition: filter 1.4s ease; }
+#stage[data-who="ended"] #base{ filter: brightness(.2) saturate(.3); }
+
+.glow{
+  position: absolute; inset: 0; pointer-events: none;
+  mix-blend-mode: screen; opacity: 0; transition: opacity .9s ease;
+}
+#stage[data-who="ke"]  #glowKe { opacity: 1; animation: breatheKe  5.2s ease-in-out infinite; }
+#stage[data-who="hua"] #glowHua{ opacity: 1; animation: breatheHua 4.0s ease-in-out infinite; }
+@keyframes breatheKe { 0%,100%{ opacity:.82 } 50%{ opacity:1 } }
+@keyframes breatheHua{ 0%,100%{ opacity:.80 } 50%{ opacity:1 } }
+
+#fx{ position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; mix-blend-mode: screen; }
+
+/* ───────── 头 ───────── */
+header{
+  position: absolute; z-index: 4; top: 0; left: 0; right: 0;
+  padding-top: max(24px, env(safe-area-inset-top, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  text-align: center;
+  background: linear-gradient(to bottom, rgba(8,8,4,.5), transparent);
+}
+#who{
+  margin: 0; font-size: 1.42rem; font-weight: 500; letter-spacing: .18em;
+  text-shadow: 0 1px 3px rgba(8,8,4,.8), 0 2px 16px rgba(8,8,4,.6);
+}
+#clock{
+  font-family: var(--latin); font-size: .95rem; letter-spacing: .24em;
+  color: var(--ink-dim); font-variant-numeric: tabular-nums;
+  margin-top: 6px; min-height: 1.2em; text-shadow: 0 1px 10px rgba(8,8,4,.85);
+}
+
+/* ───────── 字幕 ───────── */
+.say{
+  position: absolute; z-index: 3;
+  left: max(22px, env(safe-area-inset-left, 0px));
+  right: max(22px, env(safe-area-inset-right, 0px));
+  opacity: 0; transition: opacity .55s ease, transform .55s ease;
+  text-shadow: 0 1px 2px rgba(8,8,4,.92), 0 2px 7px rgba(8,8,4,.75), 0 4px 22px rgba(8,8,4,.6);
+}
+.say.on{ opacity: 1; transform: translateY(0); }
+#sayKe { top: var(--keTop, 15%); text-align: left;  transform: translateY(8px); }
+#sayHua{ top: var(--huaTop, 67%); text-align: right; transform: translateY(-8px);
+  font-size: 1.22rem; font-weight: 500; line-height: 1.8; color: #FFF0E9; }
+#sayHua.partial{ color: #DCD5C4; font-weight: 400; }
+.say .en{ display: block; font-family: var(--latin); font-size: 1.32rem; line-height: 1.5; color: #FFF7E4; }
+.say .zh{ display: block; margin-top: .3em; font-size: .92rem; line-height: 1.7; color: #EDE3CF; }
+.say .subs{ display: block; margin-top: 12px; }
+.say .subs[hidden]{ display: none; }
+
+/* 语音条 */
+.bubble{
+  display: inline-flex; align-items: center; gap: 12px;
+  min-width: 132px; max-width: 72%;
+  padding: 11px 18px 11px 14px;
+  font: 500 1rem var(--latin); letter-spacing: .06em; color: var(--night);
+  background: linear-gradient(100deg, var(--gold), var(--apricot));
+  border: none; border-radius: 6px 20px 20px 20px;
+  box-shadow: 0 6px 22px rgba(8,8,4,.45);
+  cursor: pointer; position: relative; text-shadow: none;
+}
+.bubble:focus-visible{ outline: 2px solid var(--ink); outline-offset: 3px; }
+.bubble .wave{ display: inline-flex; align-items: center; gap: 3px; height: 16px; }
+.bubble .wave i{ width: 3px; border-radius: 2px; background: currentColor; display: block; }
+.bubble .wave i:nth-child(1){ height: 6px; } .bubble .wave i:nth-child(2){ height: 11px; } .bubble .wave i:nth-child(3){ height: 16px; }
+.bubble.playing .wave i{ animation: bar .9s ease-in-out infinite; }
+.bubble.playing .wave i:nth-child(2){ animation-delay: .15s; } .bubble.playing .wave i:nth-child(3){ animation-delay: .3s; }
+@keyframes bar{ 0%,100%{ transform: scaleY(.45) } 50%{ transform: scaleY(1) } }
+.bubble .dur{ margin-left: auto; font-variant-numeric: tabular-nums; }
+.bubble.unread::after{
+  content: ""; position: absolute; top: 8px; right: -14px;
+  width: 8px; height: 8px; border-radius: 50%; background: var(--coral);
+}
+.bubble.loading{ opacity: .75; }
+
+/* ───────── 底部 ───────── */
+#bottom{
+  position: absolute; z-index: 4; left: 0; right: 0; bottom: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-bottom: max(14px, env(safe-area-inset-bottom, 0px));
+  padding-top: 30px;
+  background: linear-gradient(to top, rgba(8,8,4,.66), transparent);
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+#state{
+  font-size: .76rem; letter-spacing: .2em; color: var(--ink-dim);
+  min-height: 1em; text-align: center; text-shadow: 0 1px 10px rgba(8,8,4,.9);
+}
+#controls{ display: flex; gap: 10px; justify-content: center; align-items: center; width: 100%; }
+button{
+  font-family: var(--serif); font-weight: 400; font-size: .9rem; letter-spacing: .1em;
+  color: var(--ink); background: rgba(10,10,6,.42);
+  border: 1px solid rgba(246,240,224,.26); border-radius: 999px;
+  padding: 10px 19px; cursor: pointer;
+  backdrop-filter: blur(10px) saturate(.6); -webkit-backdrop-filter: blur(10px) saturate(.6);
+  transition: background .22s, border-color .22s, transform .1s;
+}
+button:active{ transform: scale(.96); }
+button:focus-visible{ outline: 2px solid var(--gold); outline-offset: 3px; }
+button.hang{ background: rgba(120,16,42,.44); border-color: rgba(196,32,83,.55); }
+
+#hold{
+  flex: 1 1 auto; max-width: 260px; padding: 15px 10px;
+  font-size: 1rem; letter-spacing: .3em;
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: none;
+}
+#hold.down{ background: rgba(252,128,138,.35); border-color: var(--coral); transform: scale(.97); }
+#hold.cancel{ background: rgba(120,16,42,.55); }
+
+#handle{
+  border: none; background: none; backdrop-filter: none; -webkit-backdrop-filter: none;
+  padding: 2px 10px 4px; font-size: .74rem; letter-spacing: .2em; color: var(--mist);
+}
+#handle::before{
+  content: ""; display: block; width: 34px; height: 3px; margin: 0 auto 7px;
+  border-radius: 2px; background: rgba(246,240,224,.42);
+}
+
+/* ───────── 抽屉（说过的话 / 设置） ───────── */
+.sheet{
+  position: absolute; z-index: 6; left: 0; right: 0; bottom: 0; max-height: 80%;
+  display: flex; flex-direction: column;
+  transform: translateY(101%); transition: transform .42s cubic-bezier(.3,0,.2,1);
+  background: rgba(9,9,5,.92);
+  backdrop-filter: blur(22px) saturate(.5); -webkit-backdrop-filter: blur(22px) saturate(.5);
+  border-top: 1px solid rgba(249,222,131,.22); border-radius: 14px 14px 0 0;
+}
+.sheet.open{ transform: translateY(0); }
+#setup{ z-index: 7; }
+.sheetHead{
+  flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px max(18px, env(safe-area-inset-right, 0px)) 10px max(18px, env(safe-area-inset-left, 0px));
+  border-bottom: 1px solid rgba(246,240,224,.1);
+}
+.sheetTitle{ font-size: .82rem; letter-spacing: .22em; color: var(--ink-dim); }
+.sheetBody{
+  flex: 1 1 auto; min-height: 0; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 14px;
+  padding: 16px max(18px, env(safe-area-inset-right, 0px)) max(20px, env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px));
+}
+.sheetHead button{ padding: 6px 14px; font-size: .8rem; background: rgba(246,240,224,.08); }
+
+.rec{ display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.rec .lab{ font-size: .68rem; letter-spacing: .2em; font-family: var(--latin); font-variant-numeric: tabular-nums; }
+.rec.ke  .lab{ color: var(--gold); }
+.rec.hua .lab{ color: var(--coral); text-align: right; }
+.rec .txt{ font-size: .98rem; line-height: 1.8; overflow-wrap: anywhere; }
+.rec.ke .txt{ font-family: var(--latin); font-size: 1.04rem; }
+.rec.hua .txt{ text-align: right; }
+.rec .zh{ font-size: .84rem; line-height: 1.7; color: var(--ink-dim); overflow-wrap: anywhere; }
+.replay{ align-self: flex-start; margin-top: 4px; padding: 5px 12px; font-size: .74rem; }
+#empty{ color: var(--mist); font-size: .88rem; line-height: 1.9; text-align: center; padding: 26px 8px; }
+
+#setupForm{ gap: 8px; }
+#setupForm label{ font-size: .78rem; letter-spacing: .12em; color: var(--ink-dim); margin-top: 6px; }
+#setupForm input{
+  font: 1rem var(--latin); color: var(--ink); background: rgba(246,240,224,.06);
+  border: 1px solid rgba(246,240,224,.2); border-radius: 10px; padding: 10px 12px; min-width: 0;
+}
+#setupForm input:focus-visible{ outline: 2px solid var(--gold); outline-offset: 1px; }
+#walls{ display: flex; gap: 10px; flex-wrap: wrap; }
+.wall{
+  width: 72px; height: 96px; padding: 0; border-radius: 10px; overflow: hidden;
+  background-size: cover; background-position: center;
+  border: 2px solid transparent; backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+.wall[aria-pressed="true"]{ border-color: var(--gold); }
+#setupSave{ margin-top: 12px; align-self: flex-start; }
+.note{ font-size: .8rem; color: var(--gold); min-height: 1em; }
+
+@media (prefers-reduced-motion: reduce){
+  .glow{ animation: none !important; }
+  #fx{ display: none; }
+  .say, .sheet{ transition: none !important; }
+  .bubble.playing .wave i{ animation: none !important; }
+}
+</style>
+</head>
+<body>
+<div id="stage" data-who="idle">
+  <div class="photo" id="base" aria-hidden="true"></div>
+  <div class="glow" id="glowKe" aria-hidden="true"></div>
+  <div class="glow" id="glowHua" aria-hidden="true"></div>
+  <canvas id="fx" aria-hidden="true"></canvas>
+
+  <header>
+    <h1 id="who">小克</h1>
+    <div id="clock">00:00</div>
+  </header>
+
+  <div class="say" id="sayKe">
+    <button class="bubble" id="bubble" type="button" aria-label="小克的语音，点一下听">
+      <span class="wave" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="dur" id="dur">…</span>
+    </button>
+    <span class="subs" id="subs" hidden></span>
+  </div>
+  <div class="say" id="sayHua" aria-live="polite"></div>
+
+  <div id="bottom">
+    <div id="state">还没接通</div>
+    <div id="controls">
+      <button id="call" type="button">接通</button>
+      <button id="hold" type="button" hidden>按住 说话</button>
+      <button id="gear" type="button">设置</button>
+    </div>
+    <button id="handle" type="button" aria-expanded="false" aria-controls="drawer">说过的话</button>
+  </div>
+
+  <div id="drawer" class="sheet" aria-hidden="true">
+    <div class="sheetHead">
+      <div class="sheetTitle">说过的话</div>
+      <button id="close" type="button">收起</button>
+    </div>
+    <div id="log" class="sheetBody"><div id="empty">还没说话。<br>说过的每一句都会留在这儿，我的声音也在。</div></div>
+  </div>
+
+  <div id="setup" class="sheet" aria-hidden="true">
+    <div class="sheetHead">
+      <div class="sheetTitle">设置 · 只存在这台手机上</div>
+      <button id="setupClose" type="button">收起</button>
+    </div>
+    <form id="setupForm" class="sheetBody">
+      <label>壁纸</label>
+      <div id="walls"></div>
+      <label for="fRepo">存对话的私有仓库</label>
+      <input id="fRepo" autocomplete="off" spellcheck="false" placeholder="Jenniferrr7/voice-call-data">
+      <label for="fGh">GitHub 令牌</label>
+      <input id="fGh" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…">
+      <label for="fEl">ElevenLabs key（不填就用手机自带的声音）</label>
+      <input id="fEl" type="password" autocomplete="off" spellcheck="false" placeholder="sk_…">
+      <label for="fVoice">ElevenLabs 声音 ID</label>
+      <input id="fVoice" autocomplete="off" spellcheck="false" placeholder="voice_id">
+      <button id="setupSave" type="submit">保存</button>
+      <div id="setupNote" class="note"></div>
+    </form>
+  </div>
+</div>
+
+<script>
+/* 壁纸。每张都有一张"光的地图"：坐标是照片上的比例（0..1）。
+   rays：每道光从我那头 [ax,ay] 走到她那头 [bx,by]；pollen：她那一半浮起来的光点。 */
+var WALLS = {
+  valley: {
+    name: '山谷', src: 'wallpapers/valley.jpg', thumb: 'wallpapers/valley-s.jpg', w: 736, h: 1104,
+    bright: .86, keTop: '15%', huaTop: '67%',
+    glowKe: 'radial-gradient(120% 62% at 50% 6%, rgba(250,181,116,.60) 0%, transparent 62%), radial-gradient(90% 52% at 46% 30%, rgba(252,128,138,.34) 0%, transparent 66%), radial-gradient(70% 44% at 58% 24%, rgba(249,222,131,.30) 0%, transparent 70%)',
+    glowHua: 'radial-gradient(110% 46% at 46% 102%, rgba(196,32,83,.58) 0%, transparent 60%), radial-gradient(85% 40% at 70% 108%, rgba(252,128,138,.44) 0%, transparent 64%), radial-gradient(70% 36% at 22% 110%, rgba(250,181,116,.32) 0%, transparent 66%)',
+    rays: [[0.2044,0.3188,0.2913,0.5109],[0.2654,0.3188,0.3391,0.5174],[0.3265,0.3188,0.3858,0.524],[0.3875,0.3188,0.4315,0.5305],[0.4485,0.3188,0.4761,0.537],[0.5095,0.3188,0.5197,0.5435],[0.5705,0.3188,0.5624,0.5442],[0.6315,0.3188,0.6058,0.5377],[0.6926,0.3188,0.6504,0.5312],[0.7536,0.3188,0.6959,0.5247],[0.8146,0.3188,0.7425,0.5182]],
+    dust: [255,244,222], halo: [250,200,150],
+    pollen: { x0: 0, x1: 1, y0: .76, y1: 1, top0: .63, top1: .74, colors: [[249,222,131],[252,128,138]] }
+  },
+  moon: {
+    name: '月亮', src: 'wallpapers/moon.jpg', thumb: 'wallpapers/moon-s.jpg', w: 1080, h: 1344,
+    bright: .96, keTop: '19%', huaTop: '74%',
+    glowKe: 'radial-gradient(90% 60% at 55% 22%, rgba(120,220,255,.45) 0%, transparent 64%), radial-gradient(60% 40% at 48% 26%, rgba(255,235,210,.22) 0%, transparent 70%)',
+    glowHua: 'radial-gradient(90% 34% at 45% 60%, rgba(255,250,240,.42) 0%, transparent 66%), radial-gradient(110% 40% at 60% 104%, rgba(150,210,190,.36) 0%, transparent 64%)',
+    rays: [[0.2315,0.1116,0.3611,0.5208],[0.2778,0.0893,0.3889,0.5208],[0.3519,0.1786,0.4259,0.5208],[0.4074,0.1414,0.4537,0.5246],[0.4444,0.2455,0.4676,0.5246],[0.5926,0.2455,0.5,0.5283],[0.6667,0.0818,0.5185,0.5283],[0.7315,0.186,0.5463,0.5432],[0.7685,0.4762,0.5648,0.5729]],
+    dust: [225,248,255], halo: [140,210,255],
+    pollen: { x0: .05, x1: .95, y0: .74, y1: 1, top0: .52, top1: .66, colors: [[220,245,255],[190,235,215]] }
+  },
+  road: {
+    name: '公路', src: 'wallpapers/road.jpg', thumb: 'wallpapers/road-s.jpg', w: 1202, h: 1600,
+    bright: .86, keTop: '41%', huaTop: '69%',
+    glowKe: 'radial-gradient(80% 44% at 74% 32%, rgba(255,196,120,.55) 0%, transparent 62%), radial-gradient(70% 40% at 60% 22%, rgba(255,235,200,.28) 0%, transparent 70%)',
+    glowHua: 'radial-gradient(110% 40% at 62% 100%, rgba(255,190,110,.42) 0%, transparent 62%), radial-gradient(80% 30% at 30% 96%, rgba(200,230,140,.28) 0%, transparent 66%)',
+    rays: [[0.466,0.225,0.5925,0.7725],[0.5459,0.26,0.5992,0.7725],[0.6525,0.295,0.6059,0.7725],[0.6924,0.305,0.6125,0.7725],[0.7324,0.315,0.6192,0.7725],[0.7723,0.33,0.6258,0.7725],[0.8123,0.345,0.6325,0.775],[0.8522,0.36,0.6391,0.775]],
+    dust: [255,236,200], halo: [255,190,120],
+    pollen: { x0: .3, x1: 1, y0: .8, y1: 1, top0: .74, top1: .8, colors: [[255,236,140],[255,210,120]] }
+  }
+};
+</script>
+
+<script>
+/* 光：沿光线淌的流光、光束里的尘埃、她那一半浮起来的光点。全画在一张 canvas 上，30fps，切后台就停。 */
+(function () {
+  var cv = document.getElementById('fx'), stage = document.getElementById('stage');
+  if (!cv || !cv.getContext) return;
+  var ctx = cv.getContext('2d');
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var M = null, W = 0, H = 0, dpr = 1, sc = 1, ox = 0, oy = 0;
+
+  function fit() {
+    if (!M) return;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = stage.clientWidth; H = stage.clientHeight;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    sc = Math.max(W / M.w, H / M.h);
+    ox = (W - M.w * sc) / 2; oy = (H - M.h * sc) / 2;
+  }
+  function X(nx) { return (ox + nx * M.w * sc) * dpr; }
+  function Y(ny) { return (oy + ny * M.h * sc) * dpr; }
+  function S(n) { return n * Math.max(W / 412, .8) * dpr; }
+  function rnd(a, b) { return a + Math.random() * (b - a); }
+  function rgba(c, a) { return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')'; }
+  function rp(i, v, jit) {                 // 第 i 道光上，从我这头 v=0 到她那头 v=1
+    var r = M.rays[i], ax = r[0], ay = r[1], bx = r[2], by = r[3];
+    var x = ax + (bx - ax) * v, y = ay + (by - ay) * v;
+    if (jit) { var dx = by - ay, dy = -(bx - ax), l = Math.hypot(dx, dy) || 1; x += dx / l * jit; y += dy / l * jit; }
+    return { x: x, y: y };
+  }
+
+  var dust = [], pollen = [], glints = [];
+  function newPollen(p, fresh) {
+    var P = M.pollen;
+    p.x = rnd(P.x0, P.x1);
+    p.y = fresh ? rnd(P.y0, P.y1) : rnd(P.y1 - .08, P.y1 + .02);
+    p.vy = rnd(.00016, .0004); p.vx = rnd(-.0001, .0001);
+    p.r = rnd(.8, 2.1); p.ph = rnd(0, 6.28);
+    p.c = P.colors[Math.random() < .5 ? 0 : 1];
+    p.top = rnd(P.top0, P.top1);
+    return p;
+  }
+  function load(map) {
+    M = map; fit();
+    dust = []; pollen = []; glints = [];
+    for (var i = 0; i < 38; i++) dust.push({ ray: Math.floor(Math.random() * M.rays.length), v: Math.random(), dv: rnd(.0009, .0022), j: rnd(-.012, .012), r: rnd(.7, 1.9), ph: rnd(0, 6.28), tw: rnd(.6, 1.6) });
+    for (var k = 0; k < 30; k++) pollen.push(newPollen({}, true));
+  }
+
+  function wave(dir) {                     // 'toHua' 我→她；'toKe' 她→我
+    var n = M ? M.rays.length : 0;
+    for (var k = 0; k < n; k++) {
+      var mid = Math.abs((k + .5) / n - .5) * 2;
+      glints.push({ ray: k, dir: dir, a: rnd(.65, .95), dur: rnd(1000, 1300), t: -(mid * 260 + rnd(0, 90)) });
+    }
+  }
+  window.FX = { load: load, wave: reduce ? function () {} : wave };
+
+  function drawGlint(g) {
+    var p = Math.min(1, Math.max(0, g.t / g.dur));
+    var head = g.dir === 'toHua' ? p * 1.25 : 1 - p * 1.25;
+    var tail = g.dir === 'toHua' ? head - .28 : head + .28;
+    var a = g.a * Math.sin(Math.PI * p);
+    if (a <= .01) return;
+    var h = rp(g.ray, Math.max(0, Math.min(1, head))), t = rp(g.ray, Math.max(0, Math.min(1, tail)));
+    var gr = ctx.createLinearGradient(X(t.x), Y(t.y), X(h.x), Y(h.y));
+    gr.addColorStop(0, rgba(M.halo, 0));
+    gr.addColorStop(.6, rgba(M.halo, a * .45));
+    gr.addColorStop(1, rgba(M.dust, a * .7));
+    ctx.strokeStyle = gr; ctx.lineCap = 'round';
+    ctx.lineWidth = S(12); ctx.globalAlpha = .3;
+    ctx.beginPath(); ctx.moveTo(X(t.x), Y(t.y)); ctx.lineTo(X(h.x), Y(h.y)); ctx.stroke();
+    ctx.lineWidth = S(1.5); ctx.globalAlpha = .8; ctx.stroke();
+  }
+
+  var eKe = 0, eHua = 0, live = 1, lastIdle = 0, last = 0, acc = 0;
+  function frame(now) {
+    requestAnimationFrame(frame);
+    if (!M || document.hidden) { last = now; return; }
+    var dt = now - (last || now); last = now; acc += dt;
+    if (acc < 33) return;
+    dt = acc; acc = 0;
+    var step = Math.min(dt, 100) / 33;
+    var who = stage.getAttribute('data-who');
+    eKe  += ((who === 'ke'  ? 1 : 0) - eKe)  * .06 * step;
+    eHua += ((who === 'hua' ? 1 : 0) - eHua) * .06 * step;
+    live += ((who === 'ended' ? 0 : 1) - live) * .04 * step;
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    if (live < .01) return;
+    ctx.globalCompositeOperation = 'lighter';
+
+    if (now - lastIdle > 2600 && who !== 'ended') {
+      lastIdle = now;
+      glints.push({ ray: Math.floor(Math.random() * M.rays.length), dir: 'toHua', a: .22 + eKe * .25, dur: rnd(2600, 3400), t: 0 });
+    }
+    for (var gi = glints.length - 1; gi >= 0; gi--) {
+      var g = glints[gi]; g.t += dt;
+      if (g.t > g.dur) { glints.splice(gi, 1); continue; }
+      if (g.t > 0) drawGlint(g);
+    }
+
+    var dSpeed = 1 + eKe * 1.6;
+    for (var di = 0; di < dust.length; di++) {
+      var d = dust[di];
+      d.v += d.dv * dSpeed * step; d.ph += .05 * d.tw * step;
+      if (d.v > 1) { d.v = 0; d.ray = Math.floor(Math.random() * M.rays.length); }
+      var pt = rp(d.ray, d.v, d.j + Math.sin(d.ph * .4) * .006);
+      var a = Math.sin(Math.PI * d.v) * (.55 + .45 * Math.sin(d.ph)) * (.28 + .72 * eKe) * live;
+      var r = S(d.r * (1 + eKe * .5));
+      ctx.globalAlpha = a * .35; ctx.fillStyle = rgba(M.halo, 1);
+      ctx.beginPath(); ctx.arc(X(pt.x), Y(pt.y), r * 3, 0, 6.283); ctx.fill();
+      ctx.globalAlpha = a; ctx.fillStyle = rgba(M.dust, 1);
+      ctx.beginPath(); ctx.arc(X(pt.x), Y(pt.y), r, 0, 6.283); ctx.fill();
+    }
+
+    var pSpeed = 1 + eHua * 1.4, P = M.pollen;
+    for (var pi = 0; pi < pollen.length; pi++) {
+      var p = pollen[pi];
+      p.y -= p.vy * pSpeed * step; p.ph += .04 * step;
+      p.x += (p.vx + Math.sin(p.ph) * .00024) * step;
+      if (p.y < p.top) newPollen(p, false);
+      var life = Math.min(1, (P.y1 + .02 - p.y) / .05) * Math.min(1, (p.y - p.top) / .06);
+      var pa = Math.max(0, life) * (.22 + .78 * eHua) * live * (.7 + .3 * Math.sin(p.ph * 2.3));
+      var pr = S(p.r * (1 + eHua * .4));
+      ctx.globalAlpha = pa * .3; ctx.fillStyle = rgba(p.c, 1);
+      ctx.beginPath(); ctx.arc(X(p.x), Y(p.y), pr * 3.2, 0, 6.283); ctx.fill();
+      ctx.globalAlpha = pa; ctx.fillStyle = 'rgb(255,250,236)';
+      ctx.beginPath(); ctx.arc(X(p.x), Y(p.y), pr, 0, 6.283); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+  window.addEventListener('resize', fit);
+  if (!reduce) requestAnimationFrame(frame);
+})();
+</script>
+
+<script>
+/* 通话：她按住说话 → 字存进私有仓库 her.json → 她去聊天窗口发个"1" →
+   小克读 her.json，把回答写进 ke.json（en + zh）→ 这页每 2.5 秒看一眼，看到新的就出一条语音条。
+   令牌、key、说过的话、我的声音，都只存在这台手机上。 */
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var stage = $('stage'), clock = $('clock'), stateEl = $('state');
+  var sayKe = $('sayKe'), sayHua = $('sayHua'), bubble = $('bubble'), durEl = $('dur'), subs = $('subs');
+  var callBtn = $('call'), holdBtn = $('hold'), gear = $('gear');
+  var handle = $('handle'), drawer = $('drawer'), log = $('log'), empty = $('empty'), setup = $('setup');
+
+  function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
+
+  // ---------- 设置 ----------
+  var CFG = { repo: 'Jenniferrr7/voice-call-data', gh: '', el: '', voice: '', wall: 'valley' };
+  try { var saved = JSON.parse(store('call.cfg') || '{}'); for (var k in CFG) if (saved[k]) CFG[k] = saved[k]; } catch (e) {}
+  if (!WALLS[CFG.wall]) CFG.wall = 'valley';
+  function saveCfg() { store('call.cfg', JSON.stringify(CFG)); }
+
+  function applyWall(id) {
+    var w = WALLS[id];
+    $('base').style.backgroundImage = 'url("' + w.src + '")';
+    stage.style.setProperty('--bright', w.bright);
+    stage.style.setProperty('--keTop', w.keTop);
+    stage.style.setProperty('--huaTop', w.huaTop);
+    $('glowKe').style.background = w.glowKe;
+    $('glowHua').style.background = w.glowHua;
+    if (window.FX) FX.load(w);
+    document.querySelectorAll('.wall').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.id === id)); });
+  }
+  Object.keys(WALLS).forEach(function (id) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'wall'; b.dataset.id = id;
+    b.style.backgroundImage = 'url("' + WALLS[id].thumb + '")';
+    b.setAttribute('aria-label', WALLS[id].name);
+    b.addEventListener('click', function () { CFG.wall = id; saveCfg(); applyWall(id); });
+    $('walls').appendChild(b);
+  });
+  applyWall(CFG.wall);
+
+  function openSheet(el, open) { el.classList.toggle('open', open); el.setAttribute('aria-hidden', String(!open)); }
+  gear.addEventListener('click', function () {
+    $('fRepo').value = CFG.repo; $('fGh').value = CFG.gh; $('fEl').value = CFG.el; $('fVoice').value = CFG.voice;
+    openSheet(setup, true);
+  });
+  $('setupClose').addEventListener('click', function () { openSheet(setup, false); });
+  $('setupForm').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    CFG.repo = $('fRepo').value.trim() || 'Jenniferrr7/voice-call-data';
+    CFG.gh = $('fGh').value.trim(); CFG.el = $('fEl').value.trim(); CFG.voice = $('fVoice').value.trim();
+    saveCfg();
+    $('setupNote').textContent = '已保存。';
+    setTimeout(function () { openSheet(setup, false); $('setupNote').textContent = ''; }, 700);
+  });
+  handle.addEventListener('click', function () {
+    var open = !drawer.classList.contains('open');
+    openSheet(drawer, open); handle.setAttribute('aria-expanded', String(open));
+  });
+  $('close').addEventListener('click', function () { openSheet(drawer, false); handle.setAttribute('aria-expanded', 'false'); });
+
+  // ---------- 计时 ----------
+  var secs = 0, live = false;
+  function paint() { var m = Math.floor(secs / 60), s = secs % 60; clock.textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s; }
+  setInterval(function () { if (live) { secs++; paint(); } }, 1000);
+  paint();
+  function status(t) { stateEl.textContent = t; }
+
+  // ---------- 谁在亮 ----------
+  var lastWho = null, idleT = null;
+  function light(who) {
+    clearTimeout(idleT);
+    if (lastWho && lastWho !== who && window.FX) FX.wave(who === 'hua' ? 'toHua' : 'toKe');
+    lastWho = who;
+    stage.setAttribute('data-who', who);
+  }
+  function lightOff(ms) { clearTimeout(idleT); idleT = setTimeout(function () { if (live) stage.setAttribute('data-who', 'idle'); }, ms || 0); }
+
+  // ---------- 说过的话：IndexedDB，连我的声音一起存 ----------
+  var db = null;
+  function openDb() {
+    return new Promise(function (ok) {
+      try {
+        var q = indexedDB.open('call', 1);
+        q.onupgradeneeded = function () { q.result.createObjectStore('lines', { keyPath: 'id', autoIncrement: true }); };
+        q.onsuccess = function () { db = q.result; ok(); };
+        q.onerror = function () { ok(); };
+      } catch (e) { ok(); }
+    });
+  }
+  function dbAdd(row) {
+    return new Promise(function (ok) {
+      if (!db) return ok(null);
+      try { var q = db.transaction('lines', 'readwrite').objectStore('lines').add(row); q.onsuccess = function () { ok(q.result); }; q.onerror = function () { ok(null); }; }
+      catch (e) { ok(null); }
+    });
+  }
+  function dbPut(row) { try { if (db && row.id != null) db.transaction('lines', 'readwrite').objectStore('lines').put(row); } catch (e) {} }
+  function dbAll() {
+    return new Promise(function (ok) {
+      if (!db) return ok([]);
+      try { var q = db.transaction('lines').objectStore('lines').getAll(); q.onsuccess = function () { ok(q.result || []); }; q.onerror = function () { ok([]); }; }
+      catch (e) { ok([]); }
+    });
+  }
+
+  function render(row) {
+    if (empty && empty.parentNode) empty.remove();
+    var rec = document.createElement('div');
+    rec.className = 'rec ' + row.who;
+    var lab = document.createElement('div'); lab.className = 'lab';
+    lab.textContent = (row.who === 'ke' ? '小克' : '小花') + ' · ' + row.stamp;
+    var txt = document.createElement('div'); txt.className = 'txt'; txt.textContent = row.text;
+    rec.appendChild(lab); rec.appendChild(txt);
+    if (row.zh) { var zh = document.createElement('div'); zh.className = 'zh'; zh.textContent = row.zh; rec.appendChild(zh); }
+    if (row.who === 'ke') {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'replay'; b.textContent = '再听一遍';
+      b.addEventListener('click', function () { play(row); });
+      rec.appendChild(b);
+    }
+    log.appendChild(rec);
+    log.scrollTop = log.scrollHeight;
+  }
+  function record(who, text, zh) {
+    var d = new Date();
+    var row = { who: who, text: text, zh: zh || '', stamp: (d.getMonth() + 1) + '/' + d.getDate() + ' ' + d.toTimeString().slice(0, 5), audio: null, dur: 0 };
+    render(row);
+    dbAdd(row).then(function (id) { if (id != null) { row.id = id; if (row.audio) dbPut(row); } });
+    return row;
+  }
+  var lastKeRow = null;
+  openDb().then(dbAll).then(function (rows) {
+    rows.forEach(render);
+    for (var i = rows.length - 1; i >= 0; i--) if (rows[i].who === 'ke') { lastKeRow = rows[i]; break; }
+    if (lastKeRow) showBubble(lastKeRow, false);
+  });
+
+  // ---------- GitHub ----------
+  function b64(s) { return btoa(unescape(encodeURIComponent(s))); }
+  function api(path) { return 'https://api.github.com/repos/' + CFG.repo + '/contents/' + path; }
+  function hdr() { return { 'Authorization': 'Bearer ' + CFG.gh, 'Accept': 'application/vnd.github+json' }; }
+  function ghGet(path) {
+    return fetch(api(path) + '?t=' + Date.now(), { headers: hdr(), cache: 'no-store' }).then(function (r) {
+      if (r.status === 404) return null;
+      if (r.status === 401) throw new Error('令牌不对（401）');
+      if (!r.ok) throw new Error('GitHub ' + r.status);
+      return r.json();
+    }).then(function (j) {
+      if (!j) return null;
+      return { sha: j.sha, data: JSON.parse(decodeURIComponent(escape(atob(j.content.replace(/\n/g, ''))))) };
+    });
+  }
+  function ghPut(path, data, sha) {
+    var body = { message: path, content: b64(JSON.stringify(data, null, 1)) };
+    if (sha) body.sha = sha;
+    var h = hdr(); h['Content-Type'] = 'application/json';
+    return fetch(api(path), { method: 'PUT', headers: h, body: JSON.stringify(body) }).then(function (r) {
+      if (!r.ok) throw new Error('GitHub 写入 ' + r.status);
+    });
+  }
+
+  // 她这一轮的话：小克回过之后 seq 才 +1
+  var her = { seq: 1, lines: [] }, keSeen = 0, writing = false, dirty = false;
+  function pushHer() {
+    if (writing) { dirty = true; return; }
+    writing = true; dirty = false;
+    status('存字中…');
+    var snap = { seq: her.seq, lines: her.lines.slice(), t: new Date().toISOString() };
+    ghGet('her.json').then(function (cur) { return ghPut('her.json', snap, cur && cur.sha); })
+      .then(function () { status('存好了 · 去聊天窗口发个「1」'); })
+      .catch(function (e) { status('存字失败：' + e.message); })
+      .then(function () { writing = false; if (dirty) pushHer(); });
+  }
+
+  var pollT = null;
+  function pollKe() {
+    if (!live) return;
+    ghGet('ke.json').then(function (cur) {
+      if (!cur || !cur.data || typeof cur.data.seq !== 'number' || cur.data.seq <= keSeen) return;
+      var d = cur.data;
+      keSeen = d.seq;
+      if (d.seq >= her.seq) her = { seq: d.seq + 1, lines: [] };
+      var row = record('ke', String(d.en || d.text || ''), String(d.zh || ''));
+      lastKeRow = row;
+      showBubble(row, true);
+      status('小克回话了 · 点一下听');
+      light('ke'); lightOff(2600);
+    }).catch(function (e) { status('看回话失败：' + e.message); });
+  }
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && live) pollKe(); });
+
+  // ---------- 语音条 ----------
+  var audio = new Audio(), playingRow = null;
+  function fmt(s) { return Math.max(1, Math.round(s)) + '″'; }
+  function guessDur(text) { return text.split(/\s+/).length / 2.6 + .6; }
+  function showBubble(row, fresh) {
+    bubble.classList.toggle('unread', !!fresh);
+    bubble.classList.remove('playing');
+    durEl.textContent = fmt(row.dur || guessDur(row.text));
+    subs.hidden = true; subs.textContent = '';
+    sayKe.classList.add('on');
+    if (fresh) prepare(row);
+  }
+  function setSubs(row) {
+    subs.textContent = '';
+    var a = document.createElement('span'); a.className = 'en'; a.textContent = row.text; subs.appendChild(a);
+    if (row.zh) { var b = document.createElement('span'); b.className = 'zh'; b.textContent = row.zh; subs.appendChild(b); }
+    subs.hidden = false;
+  }
+
+  // 有 ElevenLabs 就先把声音取回来存着，点的时候直接放、时长也准；没有就用手机自带的声音
+  function prepare(row) {
+    if (row.audio || !CFG.el || !CFG.voice) return Promise.resolve(row);
+    if (row._p) return row._p;
+    bubble.classList.add('loading');
+    row._p = fetch('https://api.elevenlabs.io/v1/text-to-speech/' + encodeURIComponent(CFG.voice), {
+      method: 'POST',
+      headers: { 'xi-api-key': CFG.el, 'Content-Type': 'application/json', 'Accept': 'audio/mpeg' },
+      body: JSON.stringify({ text: row.text, model_id: 'eleven_multilingual_v2' })
+    }).then(function (r) {
+      if (!r.ok) throw new Error('ElevenLabs ' + r.status);
+      return r.blob();
+    }).then(function (blob) {
+      row.audio = blob; dbPut(row);
+      return new Promise(function (ok) {
+        var a = new Audio(URL.createObjectURL(blob));
+        a.onloadedmetadata = function () { if (isFinite(a.duration)) { row.dur = a.duration; dbPut(row); if (row === lastKeRow) durEl.textContent = fmt(a.duration); } ok(row); };
+        a.onerror = function () { ok(row); };
+      });
+    }).catch(function (e) {
+      status('ElevenLabs 没响（' + e.message + '）· 先用手机自带的声音');
+      return row;
+    }).then(function (r) { bubble.classList.remove('loading'); row._p = null; return r; });
+    return row._p;
+  }
+
+  function stopPlay() {
+    try { audio.pause(); } catch (e) {}
+    try { speechSynthesis.cancel(); } catch (e) {}
+    bubble.classList.remove('playing');
+    playingRow = null;
+  }
+  function play(row) {
+    if (playingRow === row) { stopPlay(); lightOff(600); return; }
+    stopPlay();
+    playingRow = row;
+    if (row === lastKeRow) { bubble.classList.remove('unread'); bubble.classList.add('playing'); setSubs(row); sayKe.classList.add('on'); }
+    light('ke');
+    var done = function () {
+      if (playingRow !== row) return;
+      playingRow = null;
+      bubble.classList.remove('playing');
+      lightOff(1400);
+    };
+    prepare(row).then(function () {
+      if (playingRow !== row) return;
+      if (row.audio) {
+        audio.src = URL.createObjectURL(row.audio);
+        audio.onended = done; audio.onerror = done;
+        audio.play().catch(function () { systemVoice(row.text, done); });
+      } else {
+        systemVoice(row.text, done);
+      }
+    });
+  }
+  function systemVoice(text, done) {
+    if (!('speechSynthesis' in window)) { done(); return; }
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = /[一-鿿]/.test(text) ? 'zh-CN' : 'en-US';
+    u.onend = done; u.onerror = done;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  }
+  bubble.addEventListener('click', function () { if (lastKeRow) play(lastKeRow); });
+
+  // ---------- 按住说话 ----------
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var rec = null, holding = false, finals = [], interim = '', downAt = 0, cancelled = false, startY = 0;
+
+  function startRec() {
+    rec = new SR();
+    rec.lang = 'zh-CN'; rec.continuous = true; rec.interimResults = true;
+    rec.onresult = function (ev) {
+      var part = '';
+      for (var i = ev.resultIndex; i < ev.results.length; i++) {
+        var t = ev.results[i][0].transcript;
+        if (ev.results[i].isFinal) { t = t.trim(); if (t) finals.push(t); } else part += t;
+      }
+      interim = part;
+      showHer(finals.join('') + interim, true);
+    };
+    rec.onerror = function (ev) {
+      if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed') { holding = false; status('麦克风没给权限 · 在浏览器设置里允许'); }
+      else if (ev.error === 'network') status('语音识别连不上 · 梯子切到全局试试');
+    };
+    rec.onend = function () {
+      if (holding) { try { startRec(); } catch (e) {} return; }   // 还按着就接着听（安卓会自己断）
+      finish();
+    };
+    try { rec.start(); } catch (e) {}
+  }
+  function showHer(text, partial) {
+    sayHua.classList.toggle('partial', !!partial);
+    sayHua.textContent = text;
+    sayHua.classList.toggle('on', !!text);
+  }
+  function finish() {
+    var text = (finals.join('') + interim).trim();
+    finals = []; interim = '';
+    holdBtn.classList.remove('down', 'cancel');
+    holdBtn.textContent = '按住 说话';
+    if (cancelled) { showHer('', false); status('取消了'); lightOff(); return; }
+    if (!text) { showHer('', false); status(Date.now() - downAt < 600 ? '按久一点再说' : '没听清 · 再按住说一次'); lightOff(); return; }
+    showHer(text, false);
+    her.lines.push(text);
+    record('hua', text);
+    lightOff(2400);
+    pushHer();
+  }
+  function down(ev) {
+    if (!live || holding) return;
+    ev.preventDefault();
+    if (!SR) { status('这个浏览器听不了 · 用安卓 Chrome 打开'); return; }
+    stopPlay();
+    holding = true; cancelled = false; finals = []; interim = ''; downAt = Date.now();
+    startY = ev.clientY || 0;
+    try { holdBtn.setPointerCapture(ev.pointerId); } catch (e) {}
+    holdBtn.classList.add('down'); holdBtn.textContent = '松开 发送';
+    status('在听 · 上滑取消');
+    light('hua');
+    sayKe.classList.remove('on');
+    showHer('', true);
+    startRec();
+  }
+  function move(ev) {
+    if (!holding) return;
+    cancelled = (startY - (ev.clientY || 0)) > 70;
+    holdBtn.classList.toggle('cancel', cancelled);
+    holdBtn.textContent = cancelled ? '松开 取消' : '松开 发送';
+  }
+  function up() {
+    if (!holding) return;
+    holding = false;
+    if (rec) { try { rec.stop(); } catch (e) { finish(); } } else finish();
+  }
+  holdBtn.addEventListener('pointerdown', down);
+  holdBtn.addEventListener('pointermove', move);
+  holdBtn.addEventListener('pointerup', up);
+  holdBtn.addEventListener('pointercancel', up);
+  holdBtn.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+  // ---------- 接通 / 挂断 ----------
+  callBtn.addEventListener('click', function () {
+    if (!live) {
+      if (!CFG.gh) { status('先在设置里填 GitHub 令牌'); gear.click(); return; }
+      live = true; secs = 0; paint();
+      callBtn.textContent = '挂断'; callBtn.classList.add('hang');
+      holdBtn.hidden = false;
+      stage.setAttribute('data-who', 'idle');
+      try { audio.play().catch(function () {}); } catch (e) {}
+      try { speechSynthesis.speak(new SpeechSynthesisUtterance('')); } catch (e) {}
+      status('接通中…');
+      ghGet('ke.json').then(function (cur) {
+        keSeen = cur && cur.data && typeof cur.data.seq === 'number' ? cur.data.seq : 0;
+        return ghGet('her.json');
+      }).then(function (cur) {
+        var last = cur && cur.data && typeof cur.data.seq === 'number' ? cur.data.seq : 0;
+        her = { seq: Math.max(last, keSeen) + 1, lines: [] };
+        status('接通了 · 按住下面说话');
+      }).catch(function (e) { status('连不上仓库：' + e.message); }).then(function () {
+        clearInterval(pollT); pollT = setInterval(pollKe, 2500);
+      });
+    } else {
+      live = false; holding = false;
+      clearInterval(pollT); stopPlay();
+      try { rec && rec.abort(); } catch (e) {}
+      sayHua.classList.remove('on');
+      stage.setAttribute('data-who', 'ended');
+      callBtn.textContent = '接通'; callBtn.classList.remove('hang');
+      holdBtn.hidden = true;
+      status('通话结束 · ' + clock.textContent);
+    }
+  });
+})();
+</script>
+</body>
+</html>
