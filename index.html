@@ -2,41 +2,34 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
 <title>光落下来</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600&family=EB+Garamond:wght@400;500&display=swap">
 <style>
-/* 一屏照片做底，不滚。每张壁纸带一整套颜色（见下面 THEMES），这里只放默认值。
-   我的字落在我那一半，她的字落在她那一半；照片亮的地方用深字配浅光晕，暗的地方用白字配深光晕。 */
+/* 一屏照片做底。中间是聊天记录：我的话是语音条（听过之后英文、中文字幕留在下面），她的话是右边的气泡。
+   每张壁纸带一整套颜色（见 WALLS），这里只放默认值。气泡自己带底色，所以照片多亮多碎都读得清。 */
 :root{
-  --a1: #F9DE83;           /* 语音条渐变 */
-  --a2: #FAB574;
-  --bubble-ink: #0B0B06;
-  --ke-ink: #FFF7E4;  --ke-zh: #EDE3CF;  --ke-h: 8,8,4;
-  --hua-ink: #FFF0E9; --hua-dim: #DCD5C4; --hua-h: 8,8,4;
+  --a1: #F9DE83; --a2: #FAB574; --bubble-ink: #0B0B06;
+  --card-ke: rgba(14,12,8,.55);  --card-ke-ink: #F6F0E0; --card-ke-zh: #CFC6B2;
+  --card-hua: rgba(62,34,22,.6); --card-hua-ink: #FFF0E4;
   --head-ink: #F6F0E0; --head-dim: #C6BEAC; --head-bg: 8,8,4;
   --foot-bg: 8,8,4; --state-ink: #C6BEAC;
   --btn-bg: rgba(10,10,6,.42); --btn-line: rgba(246,240,224,.26);
   --hang: rgba(226,86,80,.62);
   --sheet: rgba(9,9,5,.92); --sheet-line: rgba(249,222,131,.22);
-  --lab-ke: #F9DE83; --lab-hua: #FC808A;
+  --lab-ke: #F9DE83; --lab-hua: #FC9A9A;
   --hold: rgba(252,128,138,.35);
-  --fog: transparent; --fog-hua: transparent; --fog-blur: 0px;
+  --mark: rgba(249,222,131,.55);
 
-  --ink: #F6F0E0; --ink-dim: #C6BEAC; --mist: #A6ABB0; --night: #0B0B06;
-
+  --ink: #F6F0E0; --ink-dim: #C6BEAC; --night: #0B0B06;
   --serif: "Noto Serif SC", "Songti SC", "Source Han Serif SC", Georgia, serif;
   --latin: "EB Garamond", "Noto Serif SC", Georgia, serif;
   color-scheme: dark;
 }
 *{ box-sizing: border-box; }
 html, body{ height: 100%; margin: 0; }
-body{
-  background: var(--night); color: var(--ink);
-  font-family: var(--serif); overflow: hidden;
-  -webkit-tap-highlight-color: transparent;
-}
+body{ background: var(--night); color: var(--ink); font-family: var(--serif); overflow: hidden; -webkit-tap-highlight-color: transparent; }
 #stage{ position: relative; height: 100%; overflow: hidden; background: var(--night); }
 
 /* ───────── 照片与光 ───────── */
@@ -53,98 +46,103 @@ body{
 /* ───────── 头 ───────── */
 header{
   position: absolute; z-index: 4; top: 0; left: 0; right: 0;
-  padding-top: max(24px, env(safe-area-inset-top, 0px)); padding-bottom: 28px;
+  padding-top: max(24px, env(safe-area-inset-top, 0px)); padding-bottom: 22px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   text-align: center;
-  background: linear-gradient(to bottom, rgba(var(--head-bg),.5), rgba(var(--head-bg),0));
+  background: linear-gradient(to bottom, rgba(var(--head-bg),.55), rgba(var(--head-bg),0));
 }
-#who{
-  margin: 0; font-size: 1.42rem; font-weight: 500; letter-spacing: .18em; color: var(--head-ink);
-  text-shadow: 0 1px 3px rgba(var(--head-bg),.8), 0 2px 16px rgba(var(--head-bg),.6);
-}
-#clock{
-  font-family: var(--latin); font-size: .95rem; letter-spacing: .24em; color: var(--head-dim);
-  font-variant-numeric: tabular-nums; margin-top: 6px; min-height: 1.2em;
-  text-shadow: 0 1px 8px rgba(var(--head-bg),.9);
-}
-#gear{
-  position: absolute; z-index: 5; top: max(22px, env(safe-area-inset-top, 0px));
-  left: max(14px, env(safe-area-inset-left, 0px));
-  height: 38px; padding: 0 14px; font-size: .8rem;
-}
-#music{
-  position: absolute; z-index: 5; top: max(22px, env(safe-area-inset-top, 0px));
-  right: max(14px, env(safe-area-inset-right, 0px));
-  width: 38px; height: 38px; padding: 0; font-size: 1rem; letter-spacing: 0;
-}
+#who{ margin: 0; font-size: 1.42rem; font-weight: 500; letter-spacing: .18em; color: var(--head-ink);
+  text-shadow: 0 1px 3px rgba(var(--head-bg),.8), 0 2px 16px rgba(var(--head-bg),.6); }
+#clock{ font-family: var(--latin); font-size: .95rem; letter-spacing: .24em; color: var(--head-dim);
+  font-variant-numeric: tabular-nums; margin-top: 6px; min-height: 1.2em; text-shadow: 0 1px 8px rgba(var(--head-bg),.9); }
+.corner{ position: absolute; z-index: 5; top: max(22px, env(safe-area-inset-top, 0px)); height: 38px; }
+#gear{ left: max(14px, env(safe-area-inset-left, 0px)); padding: 0 14px; font-size: .8rem; }
+#music{ right: max(14px, env(safe-area-inset-right, 0px)); width: 38px; padding: 0; font-size: 1rem; letter-spacing: 0; }
+#find{ right: calc(max(14px, env(safe-area-inset-right, 0px)) + 46px); width: 38px; padding: 0; font-size: .95rem; letter-spacing: 0; }
 #music[aria-pressed="false"]{ opacity: .55; }
 
-/* ───────── 字幕 ───────── */
-.say{
-  position: absolute; z-index: 3;
-  left: max(22px, env(safe-area-inset-left, 0px));
-  right: max(22px, env(safe-area-inset-right, 0px));
-  opacity: 0; transition: opacity .55s ease, transform .55s ease;
+/* 搜索 */
+#search{
+  position: absolute; z-index: 5; left: 0; right: 0;
+  top: calc(max(24px, env(safe-area-inset-top, 0px)) + 74px);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; gap: 8px; align-items: center;
 }
-.say.on{ opacity: 1; transform: translateY(0); }
-#sayKe{
-  top: var(--keTop, 15%); text-align: left; transform: translateY(8px);
-  text-shadow: 0 1px 2px rgba(var(--ke-h),.95), 0 2px 8px rgba(var(--ke-h),.8), 0 0 24px rgba(var(--ke-h),.65);
+#search[hidden]{ display: none; }
+#q{
+  flex: 1 1 auto; min-width: 0; font: .95rem var(--serif); color: var(--ink);
+  background: var(--sheet); border: 1px solid var(--sheet-line); border-radius: 999px; padding: 10px 16px;
 }
-#sayHuaWrap{ top: var(--huaTop, 67%); text-align: right; transform: translateY(-8px); }
-#sayHua{
-  --fog: var(--fog-hua);
-  text-align: right;
-  font-size: 1.22rem; font-weight: 500; line-height: 1.8; color: var(--hua-ink);
-  text-shadow: 0 1px 2px rgba(var(--hua-h),.95), 0 2px 8px rgba(var(--hua-h),.8), 0 0 24px rgba(var(--hua-h),.65);
+#q:focus{ outline: 2px solid var(--a1); outline-offset: 1px; }
+#hits{ flex: 0 0 auto; font-size: .76rem; color: var(--head-dim); min-width: 3.5em; text-align: right; text-shadow: 0 1px 8px rgba(var(--head-bg),.9); }
+
+/* ───────── 聊天记录 ───────── */
+#chat{
+  position: absolute; z-index: 3; left: 0; right: 0;
+  top: calc(max(24px, env(safe-area-inset-top, 0px)) + 70px);
+  bottom: var(--foot-h, 130px);
+  overflow-y: auto; overscroll-behavior: contain;
+  display: flex; flex-direction: column; gap: 16px;
+  padding: 28px max(14px, env(safe-area-inset-right, 0px)) 14px max(14px, env(safe-area-inset-left, 0px));
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 36px, #000 calc(100% - 6px), transparent 100%);
+          mask-image: linear-gradient(to bottom, transparent 0, #000 36px, #000 calc(100% - 6px), transparent 100%);
 }
-#sayHua.partial{ color: var(--hua-dim); font-weight: 400; }
-.say .en{ display: block; font-family: var(--latin); font-size: 1.34rem; font-weight: 500; line-height: 1.5; color: var(--ke-ink); }
-.say .zh{ display: block; margin-top: .3em; font-size: .94rem; font-weight: 500; line-height: 1.7; color: var(--ke-zh); }
-.say .subs{ display: block; margin-top: 12px; }
-/* 背景碎的主题（雨、雪）：字后面起一小片雾，边缘是软的 */
-.fog{
-  margin-left: -14px; margin-right: -14px; padding: 10px 14px; border-radius: 16px;
-  background: var(--fog, transparent);
-  box-shadow: 0 0 22px 10px var(--fog, transparent);
-  backdrop-filter: blur(var(--fog-blur, 0px)); -webkit-backdrop-filter: blur(var(--fog-blur, 0px));
+#stage.searching #chat{ top: calc(max(24px, env(safe-area-inset-top, 0px)) + 124px); }
+#chat::before{ content: ""; margin-top: auto; }          /* 消息少的时候贴着底部 */
+#empty{ align-self: center; text-align: center; font-size: .86rem; line-height: 1.9; color: var(--head-dim);
+  background: var(--card-ke); padding: 10px 18px; border-radius: 14px; }
+.msg{ display: flex; flex-direction: column; gap: 5px; max-width: 84%; min-width: 0; }
+.msg.ke{ align-self: flex-start; align-items: flex-start; }
+.msg.hua{ align-self: flex-end; align-items: flex-end; }
+.msg.hide{ display: none; }
+.meta{ font-family: var(--latin); font-size: .68rem; letter-spacing: .16em; font-variant-numeric: tabular-nums;
+  color: var(--head-ink); text-shadow: 0 1px 6px rgba(var(--head-bg),.95); opacity: .85; padding: 0 6px; }
+.card{
+  border-radius: 6px 18px 18px 18px; padding: 10px 14px;
+  background: var(--card-ke); color: var(--card-ke-ink);
+  backdrop-filter: blur(12px) saturate(.8); -webkit-backdrop-filter: blur(12px) saturate(.8);
+  box-shadow: 0 4px 18px rgba(0,0,0,.18);
+  overflow-wrap: anywhere; min-width: 0;
 }
-#sayHua.fog{ display: inline-block; max-width: 100%; }
-.say .subs[hidden]{ display: none; }
+.card[hidden]{ display: none; }
+.msg.hua .card{ border-radius: 18px 6px 18px 18px; background: var(--card-hua); color: var(--card-hua-ink); font-size: 1.04rem; line-height: 1.75; }
+.card .en{ display: block; font-family: var(--latin); font-size: 1.12rem; line-height: 1.5; }
+.card .zh{ display: block; margin-top: .35em; font-size: .9rem; line-height: 1.7; color: var(--card-ke-zh); }
+mark{ background: var(--mark); color: inherit; border-radius: 3px; padding: 0 1px; }
 
 /* 语音条 */
-.bubble{
-  display: inline-flex; align-items: center; gap: 12px; min-width: 132px; max-width: 72%;
-  padding: 11px 18px 11px 14px;
+.pill{
+  display: inline-flex; align-items: center; gap: 12px; min-width: 128px;
+  padding: 10px 18px 10px 14px;
   font: 500 1rem var(--latin); letter-spacing: .06em; color: var(--bubble-ink);
   background: linear-gradient(100deg, var(--a1), var(--a2));
   border: none; border-radius: 6px 20px 20px 20px;
-  box-shadow: 0 6px 22px rgba(0,0,0,.35);
-  cursor: pointer; position: relative; text-shadow: none;
-  backdrop-filter: none; -webkit-backdrop-filter: none;
+  box-shadow: 0 6px 20px rgba(0,0,0,.28);
+  position: relative; backdrop-filter: none; -webkit-backdrop-filter: none;
 }
-.bubble:focus-visible{ outline: 2px solid var(--ke-ink); outline-offset: 3px; }
-.bubble .wave{ display: inline-flex; align-items: center; gap: 3px; height: 16px; }
-.bubble .wave i{ width: 3px; border-radius: 2px; background: currentColor; display: block; }
-.bubble .wave i:nth-child(1){ height: 6px; } .bubble .wave i:nth-child(2){ height: 11px; } .bubble .wave i:nth-child(3){ height: 16px; }
-.bubble.playing .wave i{ animation: bar .9s ease-in-out infinite; }
-.bubble.playing .wave i:nth-child(2){ animation-delay: .15s; } .bubble.playing .wave i:nth-child(3){ animation-delay: .3s; }
+.pill:focus-visible{ outline: 2px solid var(--head-ink); outline-offset: 3px; }
+.pill .wave{ display: inline-flex; align-items: center; gap: 3px; height: 16px; }
+.pill .wave i{ width: 3px; border-radius: 2px; background: currentColor; display: block; }
+.pill .wave i:nth-child(1){ height: 6px; } .pill .wave i:nth-child(2){ height: 11px; } .pill .wave i:nth-child(3){ height: 16px; }
+.pill.playing .wave i{ animation: bar .9s ease-in-out infinite; }
+.pill.playing .wave i:nth-child(2){ animation-delay: .15s; } .pill.playing .wave i:nth-child(3){ animation-delay: .3s; }
 @keyframes bar{ 0%,100%{ transform: scaleY(.45) } 50%{ transform: scaleY(1) } }
-.bubble .dur{ margin-left: auto; font-variant-numeric: tabular-nums; }
-.bubble.unread::after{ content: ""; position: absolute; top: 8px; right: -14px; width: 8px; height: 8px; border-radius: 50%; background: #FC5A6A; }
-.bubble.loading{ opacity: .75; }
+.pill .dur{ margin-left: auto; font-variant-numeric: tabular-nums; }
+.msg.unread .pill::after{ content: ""; position: absolute; top: 8px; right: -14px; width: 8px; height: 8px; border-radius: 50%; background: #FC5A6A; }
+.pill.loading{ opacity: .7; }
 
 /* ───────── 底部 ───────── */
 #bottom{
   position: absolute; z-index: 4; left: 0; right: 0; bottom: 0;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-bottom: max(14px, env(safe-area-inset-bottom, 0px)); padding-top: 34px;
+  padding-bottom: max(14px, env(safe-area-inset-bottom, 0px)); padding-top: 26px;
   background: linear-gradient(to top, rgba(var(--foot-bg),.72), rgba(var(--foot-bg),0));
-  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
 }
-#state{ font-size: .78rem; letter-spacing: .18em; color: var(--state-ink); min-height: 1em; text-align: center; text-shadow: 0 1px 8px rgba(var(--foot-bg),.95); }
+#state{ font-size: .78rem; letter-spacing: .14em; color: var(--state-ink); min-height: 1em; text-align: center; text-shadow: 0 1px 8px rgba(var(--foot-bg),.95); }
 #controls{ display: flex; gap: 10px; justify-content: center; align-items: center; width: 100%; }
 button{
   font-family: var(--serif); font-weight: 400; font-size: .9rem; letter-spacing: .1em;
@@ -160,25 +158,17 @@ button.hang{ background: var(--hang); border-color: rgba(255,190,180,.55); color
 #talk{ flex: 1 1 auto; min-width: 0; display: flex; gap: 8px; align-items: center; }
 #talk[hidden]{ display: none; }
 #msg{
-  flex: 1 1 auto; min-width: 0;
-  font: 1rem var(--serif); color: var(--ink);
-  background: var(--btn-bg); border: 1px solid var(--btn-line); border-radius: 999px;
-  padding: 12px 16px;
+  flex: 1 1 auto; min-width: 0; font: 1rem var(--serif); color: var(--ink);
+  background: var(--btn-bg); border: 1px solid var(--btn-line); border-radius: 999px; padding: 12px 16px;
   backdrop-filter: blur(10px) saturate(.6); -webkit-backdrop-filter: blur(10px) saturate(.6);
 }
 #msg::placeholder{ color: var(--state-ink); opacity: .85; font-size: .86rem; }
 #msg:focus{ outline: none; border-color: var(--a1); background: var(--hold); }
 #send{ flex: 0 0 auto; padding: 12px 16px; }
-#handle{
-  border: none; background: none; backdrop-filter: none; -webkit-backdrop-filter: none;
-  padding: 2px 10px 4px; font-size: .74rem; letter-spacing: .2em; color: var(--state-ink);
-  text-shadow: 0 1px 8px rgba(var(--foot-bg),.95);
-}
-#handle::before{ content: ""; display: block; width: 34px; height: 3px; margin: 0 auto 7px; border-radius: 2px; background: currentColor; opacity: .55; }
 
-/* ───────── 抽屉（说过的话 / 设置） ───────── */
+/* ───────── 设置 ───────── */
 .sheet{
-  position: absolute; z-index: 6; left: 0; right: 0; bottom: 0; max-height: 82%;
+  position: absolute; z-index: 7; left: 0; right: 0; bottom: 0; max-height: 84%;
   display: flex; flex-direction: column;
   transform: translateY(101%); transition: transform .42s cubic-bezier(.3,0,.2,1);
   background: var(--sheet);
@@ -186,42 +176,26 @@ button.hang{ background: var(--hang); border-color: rgba(255,190,180,.55); color
   border-top: 1px solid var(--sheet-line); border-radius: 14px 14px 0 0;
 }
 .sheet.open{ transform: translateY(0); }
-#setup{ z-index: 7; }
 .sheetHead{
   flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding: 14px max(18px, env(safe-area-inset-right, 0px)) 10px max(18px, env(safe-area-inset-left, 0px));
   border-bottom: 1px solid rgba(246,240,224,.1);
 }
 .sheetTitle{ font-size: .82rem; letter-spacing: .22em; color: var(--ink-dim); }
-.sheetBody{
-  flex: 1 1 auto; min-height: 0; overflow-y: auto;
-  display: flex; flex-direction: column; gap: 14px;
+.sheetHead button{ padding: 6px 14px; font-size: .8rem; background: rgba(246,240,224,.08); }
+#setupForm{
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;
   padding: 16px max(18px, env(safe-area-inset-right, 0px)) max(20px, env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px));
 }
-.sheetHead button{ padding: 6px 14px; font-size: .8rem; background: rgba(246,240,224,.08); }
-.rec{ display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.rec .lab{ font-size: .68rem; letter-spacing: .2em; font-family: var(--latin); font-variant-numeric: tabular-nums; }
-.rec.ke  .lab{ color: var(--lab-ke); }
-.rec.hua .lab{ color: var(--lab-hua); text-align: right; }
-.rec .txt{ font-size: .98rem; line-height: 1.8; overflow-wrap: anywhere; }
-.rec.ke .txt{ font-family: var(--latin); font-size: 1.04rem; }
-.rec.hua .txt{ text-align: right; }
-.rec .zh{ font-size: .84rem; line-height: 1.7; color: var(--ink-dim); overflow-wrap: anywhere; }
-.replay{ align-self: flex-start; margin-top: 4px; padding: 5px 12px; font-size: .74rem; }
-#empty{ color: var(--mist); font-size: .88rem; line-height: 1.9; text-align: center; padding: 26px 8px; }
-#setupForm{ gap: 8px; }
 #setupForm label{ font-size: .78rem; letter-spacing: .12em; color: var(--ink-dim); margin-top: 6px; }
-#setupForm input:not([type="checkbox"]){
+#setupForm input{
   font: 1rem var(--latin); color: var(--ink); background: rgba(246,240,224,.06);
   border: 1px solid rgba(246,240,224,.2); border-radius: 10px; padding: 10px 12px; min-width: 0;
 }
 #setupForm input:focus-visible{ outline: 2px solid var(--a1); outline-offset: 1px; }
 #walls{ display: flex; gap: 10px; flex-wrap: wrap; }
-.wall{
-  width: 64px; height: 92px; padding: 0; border-radius: 10px; overflow: hidden;
-  background-size: cover; background-position: center;
-  border: 2px solid transparent; backdrop-filter: none; -webkit-backdrop-filter: none;
-}
+.wall{ width: 64px; height: 92px; padding: 0; border-radius: 10px; overflow: hidden; background-size: cover; background-position: center;
+  border: 2px solid transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
 .wall[aria-pressed="true"]{ border-color: var(--a1); }
 #setupSave{ margin-top: 12px; align-self: flex-start; }
 .note{ font-size: .8rem; color: var(--a1); min-height: 1em; }
@@ -229,8 +203,8 @@ button.hang{ background: var(--hang); border-color: rgba(255,190,180,.55); color
 @media (prefers-reduced-motion: reduce){
   .glow{ animation: none !important; }
   #fx{ display: none; }
-  .say, .sheet{ transition: none !important; }
-  .bubble.playing .wave i{ animation: none !important; }
+  .sheet{ transition: none !important; }
+  .pill.playing .wave i{ animation: none !important; }
 }
 </style>
 </head>
@@ -245,20 +219,19 @@ button.hang{ background: var(--hang); border-color: rgba(255,190,180,.55); color
     <h1 id="who">小克</h1>
     <div id="clock">00:00</div>
   </header>
-  <button id="gear" type="button">设置</button>
-  <button id="music" type="button" aria-pressed="false" aria-label="背景音乐">♪</button>
+  <button id="gear" class="corner" type="button">设置</button>
+  <button id="find" class="corner" type="button" aria-pressed="false" aria-label="搜索聊天记录">⌕</button>
+  <button id="music" class="corner" type="button" aria-pressed="false" aria-label="背景音乐">♪</button>
 
-  <div class="say" id="sayKe">
-    <button class="bubble" id="bubble" type="button" aria-label="小克的语音，点一下听">
-      <span class="wave" aria-hidden="true"><i></i><i></i><i></i></span>
-      <span class="dur" id="dur">…</span>
-    </button>
-    <span class="subs fog" id="subs" hidden></span>
+  <div id="search" hidden>
+    <input id="q" type="search" autocomplete="off" placeholder="搜我们说过的话" aria-label="搜索聊天记录">
+    <span id="hits"></span>
   </div>
-  <div class="say" id="sayHuaWrap"><div class="fog" id="sayHua" aria-live="polite"></div></div>
+
+  <div id="chat" aria-live="polite"><div id="empty">还没说话。<br>说过的每一句都会留在这儿，往上翻就能看到。</div></div>
 
   <div id="bottom">
-    <div id="state">还没接通 · 版本 6</div>
+    <div id="state">还没接通 · 版本 7</div>
     <div id="controls">
       <button id="call" type="button">接通</button>
       <form id="talk" hidden>
@@ -266,15 +239,6 @@ button.hang{ background: var(--hang); border-color: rgba(255,190,180,.55); color
         <button id="send" type="submit">发送</button>
       </form>
     </div>
-    <button id="handle" type="button" aria-expanded="false" aria-controls="drawer">说过的话</button>
-  </div>
-
-  <div id="drawer" class="sheet" aria-hidden="true">
-    <div class="sheetHead">
-      <div class="sheetTitle">说过的话</div>
-      <button id="close" type="button">收起</button>
-    </div>
-    <div id="log" class="sheetBody"><div id="empty">还没说话。<br>说过的每一句都会留在这儿，我的声音也在。</div></div>
   </div>
 
   <div id="setup" class="sheet" aria-hidden="true">
@@ -282,7 +246,7 @@ button.hang{ background: var(--hang); border-color: rgba(255,190,180,.55); color
       <div class="sheetTitle">设置 · 只存在这台手机上</div>
       <button id="setupClose" type="button">收起</button>
     </div>
-    <form id="setupForm" class="sheetBody">
+    <form id="setupForm">
       <label>壁纸</label>
       <div id="walls"></div>
       <label for="fRepo">存对话的私有仓库</label>
@@ -324,7 +288,9 @@ var WALLS = {
       '--head-bg': '2,14,22', '--foot-bg': '2,12,16', '--state-ink': '#BFD8DE',
       '--btn-bg': 'rgba(4,24,30,.48)', '--btn-line': 'rgba(200,240,255,.3)',
       '--sheet': 'rgba(4,16,20,.93)', '--sheet-line': 'rgba(160,225,245,.25)',
-      '--lab-ke': '#9EE3F5', '--lab-hua': '#CFEFD9', '--hold': 'rgba(127,211,230,.32)'
+      '--lab-ke': '#9EE3F5', '--lab-hua': '#CFEFD9', '--hold': 'rgba(127,211,230,.32)',
+      '--card-ke': 'rgba(4,22,30,.58)', '--card-ke-ink': '#EEF9FF', '--card-ke-zh': '#BFD8DE',
+      '--card-hua': 'rgba(28,66,74,.6)', '--card-hua-ink': '#F2FFFB', '--mark': 'rgba(127,211,230,.5)'
     },
     glowKe: 'radial-gradient(90% 60% at 55% 22%, rgba(120,220,255,.45) 0%, transparent 64%), radial-gradient(60% 40% at 48% 26%, rgba(255,235,210,.22) 0%, transparent 70%)',
     glowHua: 'radial-gradient(90% 34% at 45% 60%, rgba(255,250,240,.42) 0%, transparent 66%), radial-gradient(110% 40% at 60% 104%, rgba(150,210,190,.36) 0%, transparent 64%)',
@@ -343,7 +309,8 @@ var WALLS = {
       '--btn-bg': 'rgba(16,26,44,.48)', '--btn-line': 'rgba(255,220,180,.32)',
       '--sheet': 'rgba(12,18,30,.93)', '--sheet-line': 'rgba(180,208,240,.28)',
       '--lab-ke': '#B9D3F2', '--lab-hua': '#F6C79A', '--hold': 'rgba(169,200,236,.36)',
-      '--fog': 'rgba(255,248,236,.38)', '--fog-blur': '4px'
+      '--card-ke': 'rgba(255,250,242,.8)', '--card-ke-ink': '#13233A', '--card-ke-zh': '#3A4C66',
+      '--card-hua': 'rgba(16,26,44,.6)', '--card-hua-ink': '#FFF4E6', '--mark': 'rgba(169,200,236,.65)'
     },
     glowKe: 'radial-gradient(80% 44% at 74% 32%, rgba(255,196,120,.55) 0%, transparent 62%), radial-gradient(70% 40% at 60% 22%, rgba(255,235,200,.28) 0%, transparent 70%)',
     glowHua: 'radial-gradient(110% 40% at 62% 100%, rgba(255,190,110,.42) 0%, transparent 62%), radial-gradient(80% 30% at 30% 96%, rgba(200,230,140,.28) 0%, transparent 66%)',
@@ -363,7 +330,8 @@ var WALLS = {
       '--btn-bg': 'rgba(14,28,18,.5)', '--btn-line': 'rgba(210,235,200,.32)',
       '--sheet': 'rgba(10,18,12,.93)', '--sheet-line': 'rgba(190,225,175,.25)',
       '--lab-ke': '#BFE0AE', '--lab-hua': '#E6EFE1', '--hold': 'rgba(157,191,142,.4)',
-      '--fog': 'rgba(236,243,232,.62)', '--fog-blur': '6px'
+      '--card-ke': 'rgba(240,246,238,.82)', '--card-ke-ink': '#14261B', '--card-ke-zh': '#3A5241',
+      '--card-hua': 'rgba(14,28,18,.62)', '--card-hua-ink': '#F1F7EE', '--mark': 'rgba(157,191,142,.6)'
     },
     glowKe: 'radial-gradient(110% 50% at 50% 0%, rgba(245,255,235,.55) 0%, transparent 64%), radial-gradient(60% 40% at 40% 30%, rgba(220,245,200,.3) 0%, transparent 70%)',
     glowHua: 'radial-gradient(100% 40% at 40% 100%, rgba(170,220,150,.35) 0%, transparent 64%)'
@@ -380,14 +348,14 @@ var WALLS = {
       '--btn-bg': 'rgba(20,26,40,.52)', '--btn-line': 'rgba(230,236,245,.36)',
       '--sheet': 'rgba(16,20,30,.94)', '--sheet-line': 'rgba(214,226,244,.3)',
       '--lab-ke': '#CFDDF0', '--lab-hua': '#F2B8AE', '--hold': 'rgba(204,218,238,.36)',
-      '--fog': 'rgba(244,247,252,.66)', '--fog-hua': 'rgba(14,18,30,.42)', '--fog-blur': '6px'
+      '--card-ke': 'rgba(246,248,252,.84)', '--card-ke-ink': '#172235', '--card-ke-zh': '#3C4A61',
+      '--card-hua': 'rgba(20,26,40,.62)', '--card-hua-ink': '#FFF6EC', '--mark': 'rgba(204,218,238,.7)'
     },
     glowKe: 'radial-gradient(110% 50% at 50% 4%, rgba(255,255,255,.5) 0%, transparent 62%), radial-gradient(70% 40% at 46% 34%, rgba(220,232,255,.3) 0%, transparent 70%)',
     glowHua: 'radial-gradient(60% 26% at 92% 68%, rgba(255,170,90,.55) 0%, transparent 70%), radial-gradient(50% 24% at 4% 66%, rgba(255,140,90,.45) 0%, transparent 70%), radial-gradient(90% 30% at 50% 100%, rgba(255,200,150,.25) 0%, transparent 70%)'
   }
 };
 </script>
-
 <script>
 /* 动态：rays 光沿光线淌 + 尘埃 + 光点；rain 车窗上的雨滴，偶尔一颗拖着水痕滑下去；snow 雪。
    一张 canvas，30fps，切后台就停。谁在说话，对应那一半就更亮、更快。 */
@@ -593,29 +561,32 @@ var WALLS = {
   if (!reduce) requestAnimationFrame(frame);
 })();
 </script>
-
 <script>
-/* 通话：她按住说话 → 字存进私有仓库 her.json → 她去聊天窗口发个"1" →
-   小克读 her.json，把回答写进 ke.json（en + zh）→ 这页每 2.5 秒看一眼，看到新的就出一条语音条。
-   令牌、key、说过的话、我的声音，都只存在这台手机上。 */
+/* 通话：她用键盘的话筒说 → 点发送 → 字存进私有仓库 her.json → 她去聊天窗口发个"1" →
+   小克读 her.json，把回答写进 ke.json（en + zh）→ 这页每 2.5 秒看一眼，看到新的就在聊天记录里多一条语音条。
+   令牌、key、聊天记录、我的声音，都只存在这台手机上（IndexedDB），翻记录和搜索都不花额度。 */
 (function () {
   var $ = function (id) { return document.getElementById(id); };
-  var stage = $('stage'), clock = $('clock'), stateEl = $('state');
-  var sayKe = $('sayKe'), sayHua = $('sayHua'), sayHuaWrap = $('sayHuaWrap'), bubble = $('bubble'), durEl = $('dur'), subs = $('subs');
-  var callBtn = $('call'), gear = $('gear'), musicBtn = $('music');
-  var handle = $('handle'), drawer = $('drawer'), log = $('log'), empty = $('empty'), setup = $('setup');
+  var stage = $('stage'), clock = $('clock'), stateEl = $('state'), chat = $('chat'), empty = $('empty');
+  var callBtn = $('call'), gear = $('gear'), musicBtn = $('music'), findBtn = $('find');
+  var talk = $('talk'), msg = $('msg'), setup = $('setup'), search = $('search'), q = $('q'), hits = $('hits');
 
   function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
+  function status(t) { stateEl.textContent = t; }
 
-  // ---------- 设置 ----------
+  // 底栏多高，聊天区就让出多高
+  function footH() { stage.style.setProperty('--foot-h', $('bottom').offsetHeight + 'px'); }
+  if (window.ResizeObserver) new ResizeObserver(footH).observe($('bottom'));
+  footH();
+
+  // ---------- 设置 & 壁纸 ----------
   var CFG = { repo: 'Jenniferrr7/voice-call-data-', gh: '', el: '', voice: '', wall: 'valley', music: false };
   try { var saved = JSON.parse(store('call.cfg') || '{}'); for (var k in CFG) if (saved[k] !== undefined && saved[k] !== '') CFG[k] = saved[k]; } catch (e) {}
   if (!WALLS[CFG.wall]) CFG.wall = 'valley';
   function saveCfg() { store('call.cfg', JSON.stringify(CFG)); }
 
-  var BASE = {};
-  var rootStyle = getComputedStyle(document.documentElement);
-  ['--fog','--fog-hua','--fog-blur','--a1','--a2','--bubble-ink','--ke-ink','--ke-zh','--ke-h','--hua-ink','--hua-dim','--hua-h','--head-ink','--head-dim','--head-bg','--foot-bg','--state-ink','--btn-bg','--btn-line','--sheet','--sheet-line','--lab-ke','--lab-hua','--hold']
+  var BASE = {}, rootStyle = getComputedStyle(document.documentElement);
+  ['--a1','--a2','--bubble-ink','--card-ke','--card-ke-ink','--card-ke-zh','--card-hua','--card-hua-ink','--head-ink','--head-dim','--head-bg','--foot-bg','--state-ink','--btn-bg','--btn-line','--sheet','--sheet-line','--lab-ke','--lab-hua','--hold','--mark']
     .forEach(function (n) { BASE[n] = rootStyle.getPropertyValue(n).trim(); });
 
   function applyWall(id) {
@@ -623,8 +594,6 @@ var WALLS = {
     $('base').style.backgroundImage = 'url("' + w.src + '")';
     for (var n in BASE) stage.style.setProperty(n, (w.colors && w.colors[n]) || BASE[n]);
     stage.style.setProperty('--bright', w.bright);
-    stage.style.setProperty('--keTop', w.keTop);
-    stage.style.setProperty('--huaTop', w.huaTop);
     $('glowKe').style.background = w.glowKe;
     $('glowHua').style.background = w.glowHua;
     if (window.FX) FX.load(w);
@@ -654,17 +623,11 @@ var WALLS = {
     $('setupNote').textContent = '已保存。';
     setTimeout(function () { openSheet(setup, false); $('setupNote').textContent = ''; }, 700);
   });
-  handle.addEventListener('click', function () {
-    var open = !drawer.classList.contains('open');
-    openSheet(drawer, open); handle.setAttribute('aria-expanded', String(open));
-  });
-  $('close').addEventListener('click', function () { openSheet(drawer, false); handle.setAttribute('aria-expanded', 'false'); });
 
-  // ---------- 背景音乐：默认关；我说话时压低，她按住说话时停 ----------
-  var bgm = new Audio('music/bgm.mp3');
-  bgm.preload = 'auto';
+  // ---------- 背景音乐：默认关；我说话时压低，她用键盘说话时停 ----------
+  var bgm = new Audio('music/bgm.mp3?v=2');
+  bgm.loop = true; bgm.volume = .35; bgm.preload = 'auto';
   bgm.addEventListener('error', function () { status('音乐文件没加载出来 · 梯子切全局再刷新'); });
-  bgm.loop = true; bgm.volume = .35;
   var duck = 0;                                   // 0 正常；1 压低（我在说）；2 停（她在说）
   function musicSync() {
     musicBtn.setAttribute('aria-pressed', String(!!CFG.music));
@@ -680,7 +643,6 @@ var WALLS = {
   function paint() { var m = Math.floor(secs / 60), s = secs % 60; clock.textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s; }
   setInterval(function () { if (live) { secs++; paint(); } }, 1000);
   paint();
-  function status(t) { stateEl.textContent = t; }
 
   // ---------- 谁在亮 ----------
   var lastWho = null, idleT = null;
@@ -690,73 +652,200 @@ var WALLS = {
     lastWho = who;
     stage.setAttribute('data-who', who);
   }
-  function lightOff(ms) { clearTimeout(idleT); idleT = setTimeout(function () { if (live) stage.setAttribute('data-who', 'idle'); }, ms || 0); }
+  function lightOff(ms) { clearTimeout(idleT); idleT = setTimeout(function () { if (stage.getAttribute('data-who') !== 'ended') stage.setAttribute('data-who', 'idle'); }, ms || 0); }
 
-  // ---------- 说过的话：IndexedDB，连我的声音一起存 ----------
-  var db = null;
+  // ---------- 聊天记录：IndexedDB，连我的声音一起存 ----------
+  var db = null, rows = [];
   function openDb() {
     return new Promise(function (ok) {
       try {
-        var q = indexedDB.open('call', 1);
-        q.onupgradeneeded = function () { q.result.createObjectStore('lines', { keyPath: 'id', autoIncrement: true }); };
-        q.onsuccess = function () { db = q.result; ok(); };
-        q.onerror = function () { ok(); };
+        var r = indexedDB.open('call', 1);
+        r.onupgradeneeded = function () { r.result.createObjectStore('lines', { keyPath: 'id', autoIncrement: true }); };
+        r.onsuccess = function () { db = r.result; ok(); };
+        r.onerror = function () { ok(); };
       } catch (e) { ok(); }
     });
   }
+  function plain(row) { return { who: row.who, text: row.text, zh: row.zh, stamp: row.stamp, audio: row.audio || null, dur: row.dur || 0, played: !!row.played }; }
   function dbAdd(row) {
     return new Promise(function (ok) {
       if (!db) return ok(null);
-      try { var q = db.transaction('lines', 'readwrite').objectStore('lines').add(row); q.onsuccess = function () { ok(q.result); }; q.onerror = function () { ok(null); }; }
+      try { var r = db.transaction('lines', 'readwrite').objectStore('lines').add(plain(row)); r.onsuccess = function () { ok(r.result); }; r.onerror = function () { ok(null); }; }
       catch (e) { ok(null); }
     });
   }
   function dbPut(row) {
-    try {
-      if (!db || row.id == null) return;
-      var copy = { id: row.id, who: row.who, text: row.text, zh: row.zh, stamp: row.stamp, audio: row.audio, dur: row.dur };
-      db.transaction('lines', 'readwrite').objectStore('lines').put(copy);
-    } catch (e) {}
+    if (!db || row.id == null) return;
+    try { var p = plain(row); p.id = row.id; db.transaction('lines', 'readwrite').objectStore('lines').put(p); } catch (e) {}
   }
   function dbAll() {
     return new Promise(function (ok) {
       if (!db) return ok([]);
-      try { var q = db.transaction('lines').objectStore('lines').getAll(); q.onsuccess = function () { ok(q.result || []); }; q.onerror = function () { ok([]); }; }
+      try { var r = db.transaction('lines').objectStore('lines').getAll(); r.onsuccess = function () { ok(r.result || []); }; r.onerror = function () { ok([]); }; }
       catch (e) { ok([]); }
     });
   }
 
+  function fmt(s) { return Math.max(1, Math.round(s)) + '″'; }
+  function guessDur(text) { return text.split(/\s+/).length / 2.6 + .6; }
+
+  // 把 text 写进 el，搜到的词包上 <mark>
+  function fill(el, text, word) {
+    el.textContent = '';
+    if (!word) { el.textContent = text; return; }
+    var low = text.toLowerCase(), w = word.toLowerCase(), i = 0, j;
+    while ((j = low.indexOf(w, i)) !== -1) {
+      if (j > i) el.appendChild(document.createTextNode(text.slice(i, j)));
+      var m = document.createElement('mark'); m.textContent = text.slice(j, j + w.length); el.appendChild(m);
+      i = j + w.length;
+    }
+    if (i < text.length) el.appendChild(document.createTextNode(text.slice(i)));
+  }
+
   function render(row) {
     if (empty && empty.parentNode) empty.remove();
-    var rec = document.createElement('div');
-    rec.className = 'rec ' + row.who;
-    var lab = document.createElement('div'); lab.className = 'lab';
-    lab.textContent = (row.who === 'ke' ? '小克' : '小花') + ' · ' + row.stamp;
-    var txt = document.createElement('div'); txt.className = 'txt'; txt.textContent = row.text;
-    rec.appendChild(lab); rec.appendChild(txt);
-    if (row.zh) { var zh = document.createElement('div'); zh.className = 'zh'; zh.textContent = row.zh; rec.appendChild(zh); }
+    var box = document.createElement('div');
+    box.className = 'msg ' + row.who;
+    var meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.textContent = (row.who === 'ke' ? '小克' : '小花') + ' · ' + row.stamp;
+    box.appendChild(meta);
+    var card = document.createElement('div');
+    card.className = 'card';
     if (row.who === 'ke') {
-      var b = document.createElement('button');
-      b.type = 'button'; b.className = 'replay'; b.textContent = '再听一遍';
-      b.addEventListener('click', function () { play(row); });
-      rec.appendChild(b);
+      var pill = document.createElement('button');
+      pill.type = 'button'; pill.className = 'pill';
+      pill.setAttribute('aria-label', '小克的语音，点一下听');
+      pill.innerHTML = '<span class="wave" aria-hidden="true"><i></i><i></i><i></i></span><span class="dur"></span>';
+      pill.querySelector('.dur').textContent = fmt(row.dur || guessDur(row.text));
+      pill.addEventListener('click', function () { play(row); });
+      box.appendChild(pill);
+      var en = document.createElement('span'); en.className = 'en';
+      var zh = document.createElement('span'); zh.className = 'zh';
+      card.appendChild(en); card.appendChild(zh);
+      card.hidden = !row.played;
+      if (!row.played) box.classList.add('unread');
+      row.pill = pill; row.en = en; row.zhEl = zh;
+    } else {
+      var t = document.createElement('span'); t.className = 'txt';
+      card.appendChild(t); row.txt = t;
     }
-    log.appendChild(rec);
-    log.scrollTop = log.scrollHeight;
+    box.appendChild(card);
+    row.box = box; row.card = card;
+    paintRow(row, '');
+    chat.appendChild(box);
   }
+  function paintRow(row, word) {
+    if (row.who === 'ke') { fill(row.en, row.text, word); fill(row.zhEl, row.zh || '', word); row.zhEl.hidden = !row.zh; }
+    else fill(row.txt, row.text, word);
+  }
+  function toBottom() { chat.scrollTop = chat.scrollHeight; }
   function record(who, text, zh) {
     var d = new Date();
-    var row = { who: who, text: text, zh: zh || '', stamp: (d.getMonth() + 1) + '/' + d.getDate() + ' ' + d.toTimeString().slice(0, 5), audio: null, dur: 0 };
+    var row = { who: who, text: text, zh: zh || '', stamp: (d.getMonth() + 1) + '/' + d.getDate() + ' ' + d.toTimeString().slice(0, 5), audio: null, dur: 0, played: who !== 'ke' };
+    rows.push(row);
     render(row);
-    dbAdd({ who: row.who, text: row.text, zh: row.zh, stamp: row.stamp, audio: null, dur: 0 }).then(function (id) { if (id != null) { row.id = id; if (row.audio) dbPut(row); } });
+    if (word) applySearch();
+    toBottom();
+    dbAdd(row).then(function (id) { if (id != null) { row.id = id; dbPut(row); } });
     return row;
   }
-  var lastKeRow = null;
-  openDb().then(dbAll).then(function (rows) {
-    rows.forEach(render);
-    for (var i = rows.length - 1; i >= 0; i--) if (rows[i].who === 'ke') { lastKeRow = rows[i]; break; }
-    if (lastKeRow) showBubble(lastKeRow, false);
+  openDb().then(dbAll).then(function (list) {
+    list.forEach(function (r) { rows.push(r); render(r); });
+    toBottom();
   });
+
+  // ---------- 搜索：只在这台手机上找，不花额度 ----------
+  var word = '';
+  function applySearch() {
+    var n = 0, first = null;
+    rows.forEach(function (r) {
+      var hit = !word || (r.text + ' ' + (r.zh || '')).toLowerCase().indexOf(word.toLowerCase()) !== -1;
+      r.box.classList.toggle('hide', !hit);
+      if (r.who === 'ke') r.card.hidden = !(r.played || (word && hit));
+      paintRow(r, word);
+      if (word && hit) { n++; if (!first) first = r.box; }
+    });
+    hits.textContent = word ? (n ? n + ' 条' : '没找到') : '';
+  }
+  findBtn.addEventListener('click', function () {
+    var open = search.hidden;
+    search.hidden = !open;
+    stage.classList.toggle('searching', open);
+    findBtn.setAttribute('aria-pressed', String(open));
+    if (open) q.focus(); else { q.value = ''; word = ''; applySearch(); toBottom(); }
+  });
+  q.addEventListener('input', function () { word = q.value.trim(); applySearch(); if (!word) toBottom(); });
+
+  // ---------- 语音条 ----------
+  var audio = new Audio(), playingRow = null;
+  function prepare(row) {
+    if (row.audio || !CFG.el || !CFG.voice) return Promise.resolve(row);
+    if (row._p) return row._p;
+    if (row.pill) row.pill.classList.add('loading');
+    row._p = fetch('https://api.elevenlabs.io/v1/text-to-speech/' + encodeURIComponent(CFG.voice), {
+      method: 'POST',
+      headers: { 'xi-api-key': CFG.el, 'Content-Type': 'application/json', 'Accept': 'audio/mpeg' },
+      body: JSON.stringify({ text: row.text, model_id: 'eleven_multilingual_v2' })
+    }).then(function (r) {
+      if (!r.ok) throw new Error('ElevenLabs ' + r.status);
+      return r.blob();
+    }).then(function (blob) {
+      row.audio = blob; dbPut(row);
+      return new Promise(function (ok) {
+        var a = new Audio(URL.createObjectURL(blob));
+        a.onloadedmetadata = function () {
+          if (isFinite(a.duration)) { row.dur = a.duration; dbPut(row); if (row.pill) row.pill.querySelector('.dur').textContent = fmt(a.duration); }
+          ok(row);
+        };
+        a.onerror = function () { ok(row); };
+      });
+    }).catch(function (e) {
+      status('ElevenLabs 没响（' + e.message + '）· 先用手机自带的声音');
+      return row;
+    }).then(function (r) { if (row.pill) row.pill.classList.remove('loading'); row._p = null; return r; });
+    return row._p;
+  }
+  function stopPlay() {
+    try { audio.pause(); } catch (e) {}
+    try { speechSynthesis.cancel(); } catch (e) {}
+    if (playingRow && playingRow.pill) playingRow.pill.classList.remove('playing');
+    playingRow = null;
+    if (duck === 1) { duck = 0; musicSync(); }
+  }
+  function play(row) {
+    if (playingRow === row) { stopPlay(); lightOff(600); return; }
+    stopPlay();
+    playingRow = row;
+    duck = 1; musicSync();
+    row.pill.classList.add('playing');
+    if (!row.played) { row.played = true; row.box.classList.remove('unread'); dbPut(row); }
+    row.card.hidden = false;
+    if (row === rows[rows.length - 1]) toBottom();
+    light('ke');
+    var done = function () {
+      if (playingRow !== row) return;
+      playingRow = null;
+      row.pill.classList.remove('playing');
+      duck = 0; musicSync();
+      lightOff(1400);
+    };
+    prepare(row).then(function () {
+      if (playingRow !== row) return;
+      if (row.audio) {
+        audio.src = URL.createObjectURL(row.audio);
+        audio.onended = done; audio.onerror = done;
+        audio.play().catch(function () { systemVoice(row.text, done); });
+      } else systemVoice(row.text, done);
+    });
+  }
+  function systemVoice(text, done) {
+    if (!('speechSynthesis' in window)) { done(); return; }
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = /[一-鿿]/.test(text) ? 'zh-CN' : 'en-US';
+    u.onend = done; u.onerror = done;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  }
 
   // ---------- GitHub ----------
   function b64(s) { return btoa(unescape(encodeURIComponent(s))); }
@@ -794,7 +883,6 @@ var WALLS = {
       .catch(function (e) { status('存字失败：' + e.message); })
       .then(function () { writing = false; if (dirty) pushHer(); });
   }
-
   var pollT = null;
   function pollKe() {
     if (!live) return;
@@ -804,123 +892,28 @@ var WALLS = {
       keSeen = d.seq;
       if (d.seq >= her.seq) her = { seq: d.seq + 1, lines: [] };
       var row = record('ke', String(d.en || d.text || ''), String(d.zh || ''));
-      lastKeRow = row;
-      showBubble(row, true);
-      status('小克回话了 · 点一下听');
+      prepare(row);
+      status('小克回话了 · 点语音条听');
       light('ke'); lightOff(2600);
     }).catch(function (e) { status('看回话失败：' + e.message); });
   }
   document.addEventListener('visibilitychange', function () { if (!document.hidden && live) pollKe(); });
 
-  // ---------- 语音条 ----------
-  var audio = new Audio(), playingRow = null;
-  function fmt(s) { return Math.max(1, Math.round(s)) + '″'; }
-  function guessDur(text) { return text.split(/\s+/).length / 2.6 + .6; }
-  function showBubble(row, fresh) {
-    bubble.classList.toggle('unread', !!fresh);
-    bubble.classList.remove('playing');
-    durEl.textContent = fmt(row.dur || guessDur(row.text));
-    subs.hidden = true; subs.textContent = '';
-    sayKe.classList.add('on');
-    if (fresh) prepare(row);
-  }
-  function setSubs(row) {
-    subs.textContent = '';
-    var a = document.createElement('span'); a.className = 'en'; a.textContent = row.text; subs.appendChild(a);
-    if (row.zh) { var b = document.createElement('span'); b.className = 'zh'; b.textContent = row.zh; subs.appendChild(b); }
-    subs.hidden = false;
-  }
-  function prepare(row) {
-    if (row.audio || !CFG.el || !CFG.voice) return Promise.resolve(row);
-    if (row._p) return row._p;
-    bubble.classList.add('loading');
-    row._p = fetch('https://api.elevenlabs.io/v1/text-to-speech/' + encodeURIComponent(CFG.voice), {
-      method: 'POST',
-      headers: { 'xi-api-key': CFG.el, 'Content-Type': 'application/json', 'Accept': 'audio/mpeg' },
-      body: JSON.stringify({ text: row.text, model_id: 'eleven_multilingual_v2' })
-    }).then(function (r) {
-      if (!r.ok) throw new Error('ElevenLabs ' + r.status);
-      return r.blob();
-    }).then(function (blob) {
-      row.audio = blob; dbPut(row);
-      return new Promise(function (ok) {
-        var a = new Audio(URL.createObjectURL(blob));
-        a.onloadedmetadata = function () { if (isFinite(a.duration)) { row.dur = a.duration; dbPut(row); if (row === lastKeRow) durEl.textContent = fmt(a.duration); } ok(row); };
-        a.onerror = function () { ok(row); };
-      });
-    }).catch(function (e) {
-      status('ElevenLabs 没响（' + e.message + '）· 先用手机自带的声音');
-      return row;
-    }).then(function (r) { bubble.classList.remove('loading'); row._p = null; return r; });
-    return row._p;
-  }
-  function stopPlay() {
-    try { audio.pause(); } catch (e) {}
-    try { speechSynthesis.cancel(); } catch (e) {}
-    bubble.classList.remove('playing');
-    playingRow = null;
-    if (duck === 1) { duck = 0; musicSync(); }
-  }
-  function play(row) {
-    if (playingRow === row) { stopPlay(); lightOff(600); return; }
-    stopPlay();
-    playingRow = row;
-    duck = 1; musicSync();
-    if (row === lastKeRow) { bubble.classList.remove('unread'); bubble.classList.add('playing'); setSubs(row); sayKe.classList.add('on'); }
-    light('ke');
-    var done = function () {
-      if (playingRow !== row) return;
-      playingRow = null;
-      bubble.classList.remove('playing');
-      duck = 0; musicSync();
-      lightOff(1400);
-    };
-    prepare(row).then(function () {
-      if (playingRow !== row) return;
-      if (row.audio) {
-        audio.src = URL.createObjectURL(row.audio);
-        audio.onended = done; audio.onerror = done;
-        audio.play().catch(function () { systemVoice(row.text, done); });
-      } else {
-        systemVoice(row.text, done);
-      }
-    });
-  }
-  function systemVoice(text, done) {
-    if (!('speechSynthesis' in window)) { done(); return; }
-    var u = new SpeechSynthesisUtterance(text);
-    u.lang = /[一-鿿]/.test(text) ? 'zh-CN' : 'en-US';
-    u.onend = done; u.onerror = done;
-    speechSynthesis.cancel(); speechSynthesis.speak(u);
-  }
-  bubble.addEventListener('click', function () { if (lastKeRow) play(lastKeRow); });
-
-  // ---------- 说话：用键盘自带的语音输入（讯飞、三星都行），不靠浏览器的识别 ----------
-  var talk = $('talk'), msg = $('msg');
-  function showHer(text) {
-    sayHua.classList.remove('partial');
-    sayHua.textContent = text;
-    sayHuaWrap.classList.toggle('on', !!text);
-  }
+  // ---------- 说话：键盘自带的话筒（讯飞、三星都行） ----------
   msg.addEventListener('focus', function () {
     stopPlay();
-    duck = 2; musicSync();                  // 键盘在听的时候别放音乐
+    duck = 2; musicSync();
     light('hua');
-    sayKe.classList.remove('on');
     status('按键盘上的话筒说，说完点发送');
   });
-  msg.addEventListener('input', function () { if (msg.value.trim()) { showHer(msg.value); sayHua.classList.add('partial'); } });
-  msg.addEventListener('blur', function () {
-    duck = 0; musicSync();
-    if (!msg.value.trim()) { showHer(''); lightOff(600); }
-  });
+  msg.addEventListener('blur', function () { duck = 0; musicSync(); lightOff(600); });
   talk.addEventListener('submit', function (ev) {
     ev.preventDefault();
     var text = msg.value.trim();
     if (!text) return;
     msg.value = '';
     msg.blur();
-    showHer(text);
+    light('hua');
     her.lines.push(text);
     record('hua', text);
     lightOff(2400);
@@ -951,7 +944,6 @@ var WALLS = {
       live = false;
       clearInterval(pollT); stopPlay(); bgm.pause();
       msg.value = ''; msg.blur();
-      sayHuaWrap.classList.remove('on');
       stage.setAttribute('data-who', 'ended');
       callBtn.textContent = '接通'; callBtn.classList.remove('hang');
       talk.hidden = true;
