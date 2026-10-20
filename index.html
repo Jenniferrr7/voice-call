@@ -68,6 +68,11 @@ header{
   font-variant-numeric: tabular-nums; margin-top: 6px; min-height: 1.2em;
   text-shadow: 0 1px 8px rgba(var(--head-bg),.9);
 }
+#gear{
+  position: absolute; z-index: 5; top: max(22px, env(safe-area-inset-top, 0px));
+  left: max(14px, env(safe-area-inset-left, 0px));
+  height: 38px; padding: 0 14px; font-size: .8rem;
+}
 #music{
   position: absolute; z-index: 5; top: max(22px, env(safe-area-inset-top, 0px));
   right: max(14px, env(safe-area-inset-right, 0px));
@@ -152,12 +157,18 @@ button{
 button:active{ transform: scale(.96); }
 button:focus-visible{ outline: 2px solid var(--a1); outline-offset: 3px; }
 button.hang{ background: var(--hang); border-color: rgba(255,190,180,.55); color: #FFF6F2; }
-#hold{
-  flex: 1 1 auto; max-width: 260px; padding: 15px 10px; font-size: 1rem; letter-spacing: .3em;
-  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: none;
+#talk{ flex: 1 1 auto; min-width: 0; display: flex; gap: 8px; align-items: center; }
+#talk[hidden]{ display: none; }
+#msg{
+  flex: 1 1 auto; min-width: 0;
+  font: 1rem var(--serif); color: var(--ink);
+  background: var(--btn-bg); border: 1px solid var(--btn-line); border-radius: 999px;
+  padding: 12px 16px;
+  backdrop-filter: blur(10px) saturate(.6); -webkit-backdrop-filter: blur(10px) saturate(.6);
 }
-#hold.down{ background: var(--hold); border-color: var(--a1); transform: scale(.97); }
-#hold.cancel{ background: rgba(120,16,42,.6); }
+#msg::placeholder{ color: var(--state-ink); opacity: .85; font-size: .86rem; }
+#msg:focus{ outline: none; border-color: var(--a1); background: var(--hold); }
+#send{ flex: 0 0 auto; padding: 12px 16px; }
 #handle{
   border: none; background: none; backdrop-filter: none; -webkit-backdrop-filter: none;
   padding: 2px 10px 4px; font-size: .74rem; letter-spacing: .2em; color: var(--state-ink);
@@ -234,6 +245,7 @@ button.hang{ background: var(--hang); border-color: rgba(255,190,180,.55); color
     <h1 id="who">小克</h1>
     <div id="clock">00:00</div>
   </header>
+  <button id="gear" type="button">设置</button>
   <button id="music" type="button" aria-pressed="false" aria-label="背景音乐">♪</button>
 
   <div class="say" id="sayKe">
@@ -246,11 +258,13 @@ button.hang{ background: var(--hang); border-color: rgba(255,190,180,.55); color
   <div class="say" id="sayHuaWrap"><div class="fog" id="sayHua" aria-live="polite"></div></div>
 
   <div id="bottom">
-    <div id="state">还没接通 · 版本 5</div>
+    <div id="state">还没接通 · 版本 6</div>
     <div id="controls">
       <button id="call" type="button">接通</button>
-      <button id="hold" type="button" hidden>按住 说话</button>
-      <button id="gear" type="button">设置</button>
+      <form id="talk" hidden>
+        <input id="msg" autocomplete="off" enterkeyhint="send" placeholder="点这里，用键盘上的话筒说" aria-label="想跟小克说的话">
+        <button id="send" type="submit">发送</button>
+      </form>
     </div>
     <button id="handle" type="button" aria-expanded="false" aria-controls="drawer">说过的话</button>
   </div>
@@ -588,7 +602,7 @@ var WALLS = {
   var $ = function (id) { return document.getElementById(id); };
   var stage = $('stage'), clock = $('clock'), stateEl = $('state');
   var sayKe = $('sayKe'), sayHua = $('sayHua'), sayHuaWrap = $('sayHuaWrap'), bubble = $('bubble'), durEl = $('dur'), subs = $('subs');
-  var callBtn = $('call'), holdBtn = $('hold'), gear = $('gear'), musicBtn = $('music');
+  var callBtn = $('call'), gear = $('gear'), musicBtn = $('music');
   var handle = $('handle'), drawer = $('drawer'), log = $('log'), empty = $('empty'), setup = $('setup');
 
   function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
@@ -881,101 +895,37 @@ var WALLS = {
   }
   bubble.addEventListener('click', function () { if (lastKeRow) play(lastKeRow); });
 
-  // ---------- 按住说话 ----------
-  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  var rec = null, holding = false, finals = [], interim = '', downAt = 0, cancelled = false, startY = 0, recErr = '', heard = false;
-  function startRec() {
-    rec = new SR();
-    rec.lang = 'zh-CN'; rec.continuous = false; rec.interimResults = true;
-    rec.onaudiostart = function () { heard = true; status('在听 · 上滑取消'); };
-    rec.onresult = function (ev) {
-      var part = '';
-      for (var i = ev.resultIndex; i < ev.results.length; i++) {
-        var t = ev.results[i][0].transcript;
-        if (ev.results[i].isFinal) { t = t.trim(); if (t) finals.push(t); } else part += t;
-      }
-      interim = part;
-      showHer(finals.join('') + interim, true);
-    };
-    rec.onerror = function (ev) {
-      if (ev.error === 'no-speech' && holding) return;          // 还按着，只是停顿了一下
-      recErr = ev.error || 'unknown';
-      if (recErr === 'not-allowed' || recErr === 'service-not-allowed') holding = false;
-    };
-    rec.onend = function () {
-      if (holding) { setTimeout(function () { if (holding) startRec(); else finish(); }, 250); return; }   // 还按着就接着听（安卓说完一句就会断）
-      finish();
-    };
-    try { rec.start(); } catch (e) { recErr = 'start:' + e.name; }
-    if (recErr === 'aborted' && (finals.length || interim)) recErr = '';
-  }
-  var ERR = {
-    'network': '语音识别连不上谷歌 · 梯子切到全局再试',
-    'not-allowed': '麦克风没给权限 · 点网址左边的图标，把麦克风打开',
-    'service-not-allowed': '这台手机的谷歌语音服务用不了',
-    'no-speech': '没听到声音 · 离手机近一点再说',
-    'audio-capture': '麦克风被别的应用占着',
-    'aborted': '识别被打断了 · 再按住说一次',
-    'language-not-supported': '谷歌语音不支持中文识别'
-  };
-  function showHer(text, partial) {
-    sayHua.classList.toggle('partial', !!partial);
+  // ---------- 说话：用键盘自带的语音输入（讯飞、三星都行），不靠浏览器的识别 ----------
+  var talk = $('talk'), msg = $('msg');
+  function showHer(text) {
+    sayHua.classList.remove('partial');
     sayHua.textContent = text;
     sayHuaWrap.classList.toggle('on', !!text);
   }
-  function finish() {
-    if (finals.length || interim) recErr = '';
-    var text = (finals.join('') + interim).trim();
-    finals = []; interim = '';
-    holdBtn.classList.remove('down', 'cancel');
-    holdBtn.textContent = '按住 说话';
+  msg.addEventListener('focus', function () {
+    stopPlay();
+    duck = 2; musicSync();                  // 键盘在听的时候别放音乐
+    light('hua');
+    sayKe.classList.remove('on');
+    status('按键盘上的话筒说，说完点发送');
+  });
+  msg.addEventListener('input', function () { if (msg.value.trim()) { showHer(msg.value); sayHua.classList.add('partial'); } });
+  msg.addEventListener('blur', function () {
     duck = 0; musicSync();
-    if (cancelled) { showHer('', false); status('取消了'); lightOff(); return; }
-    if (!text) {
-      showHer('', false);
-      if (recErr) status((ERR[recErr] || '没听清') + '（' + recErr + '）');
-      else if (Date.now() - downAt < 600) status('按久一点再说');
-      else status(heard ? '听到声音了，但没认出字 · 再说一次' : '麦克风没打开 · 再按住试试');
-      lightOff(); return;
-    }
-    showHer(text, false);
+    if (!msg.value.trim()) { showHer(''); lightOff(600); }
+  });
+  talk.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var text = msg.value.trim();
+    if (!text) return;
+    msg.value = '';
+    msg.blur();
+    showHer(text);
     her.lines.push(text);
     record('hua', text);
     lightOff(2400);
     pushHer();
-  }
-  function down(ev) {
-    if (!live || holding) return;
-    ev.preventDefault();
-    if (!SR) { status('这个浏览器听不了 · 用安卓 Chrome 打开'); return; }
-    stopPlay();
-    duck = 2; musicSync();
-    holding = true; cancelled = false; finals = []; interim = ''; downAt = Date.now(); recErr = ''; heard = false;
-    startY = ev.clientY || 0;
-    try { holdBtn.setPointerCapture(ev.pointerId); } catch (e) {}
-    holdBtn.classList.add('down'); holdBtn.textContent = '松开 发送';
-    status('打开麦克风…');
-    light('hua');
-    sayKe.classList.remove('on');
-    showHer('', true);
-    startRec();
-  }
-  function move(ev) {
-    if (!holding) return;
-    cancelled = (startY - (ev.clientY || 0)) > 70;
-    holdBtn.classList.toggle('cancel', cancelled);
-    holdBtn.textContent = cancelled ? '松开 取消' : '松开 发送';
-  }
-  function up() {
-    if (!holding) return;
-    holding = false;
-    if (rec) { try { rec.stop(); } catch (e) { finish(); } } else finish();
-  }
-  holdBtn.addEventListener('pointerdown', down);
-  holdBtn.addEventListener('pointermove', move);
-  holdBtn.addEventListener('pointerup', up);
-  holdBtn.addEventListener('pointercancel', up);
-  holdBtn.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+  });
 
   // ---------- 接通 / 挂断 ----------
   callBtn.addEventListener('click', function () {
@@ -983,7 +933,7 @@ var WALLS = {
       if (!CFG.gh) { status('先在设置里填 GitHub 令牌'); gear.click(); return; }
       live = true; secs = 0; paint();
       callBtn.textContent = '挂断'; callBtn.classList.add('hang');
-      holdBtn.hidden = false;
+      talk.hidden = false;
       stage.setAttribute('data-who', 'idle');
       duck = 0; musicSync();
       status('接通中…');
@@ -993,18 +943,18 @@ var WALLS = {
       }).then(function (cur) {
         var last = cur && cur.data && typeof cur.data.seq === 'number' ? cur.data.seq : 0;
         her = { seq: Math.max(last, keSeen) + 1, lines: [] };
-        status('接通了 · 按住下面说话');
+        status('接通了 · 点下面的框说话');
       }).catch(function (e) { status('连不上仓库：' + e.message); }).then(function () {
         clearInterval(pollT); pollT = setInterval(pollKe, 2500);
       });
     } else {
-      live = false; holding = false;
+      live = false;
       clearInterval(pollT); stopPlay(); bgm.pause();
-      try { rec && rec.abort(); } catch (e) {}
+      msg.value = ''; msg.blur();
       sayHuaWrap.classList.remove('on');
       stage.setAttribute('data-who', 'ended');
       callBtn.textContent = '接通'; callBtn.classList.remove('hang');
-      holdBtn.hidden = true;
+      talk.hidden = true;
       status('通话结束 · ' + clock.textContent);
     }
   });
