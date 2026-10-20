@@ -7,73 +7,73 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600&family=EB+Garamond:wght@400;500&display=swap">
 <style>
-/* 一屏照片做底，不滚。我的字落在我那一半（天上），她的字落在她那一半（地上）。
-   我的回话是一条语音条，点了才响；她那头按住说话，松手就存。 */
+/* 一屏照片做底，不滚。每张壁纸带一整套颜色（见下面 THEMES），这里只放默认值。
+   我的字落在我那一半，她的字落在她那一半；照片亮的地方用深字配浅光晕，暗的地方用白字配深光晕。 */
 :root{
-  --gold:    #F9DE83;
-  --apricot: #FAB574;
-  --coral:   #FC808A;
-  --magenta: #C42053;
+  --a1: #F9DE83;           /* 语音条渐变 */
+  --a2: #FAB574;
+  --bubble-ink: #0B0B06;
+  --ke-ink: #FFF7E4;  --ke-zh: #EDE3CF;  --ke-h: 8,8,4;
+  --hua-ink: #FFF0E9; --hua-dim: #DCD5C4; --hua-h: 8,8,4;
+  --head-ink: #F6F0E0; --head-dim: #C6BEAC; --head-bg: 8,8,4;
+  --foot-bg: 8,8,4; --state-ink: #C6BEAC;
+  --btn-bg: rgba(10,10,6,.42); --btn-line: rgba(246,240,224,.26);
+  --hang: rgba(120,16,42,.5);
+  --sheet: rgba(9,9,5,.92); --sheet-line: rgba(249,222,131,.22);
+  --lab-ke: #F9DE83; --lab-hua: #FC808A;
+  --hold: rgba(252,128,138,.35);
+  --fog: transparent; --fog-hua: transparent; --fog-blur: 0px;
 
-  --ink:     #F6F0E0;
-  --ink-dim: #C6BEAC;
-  --mist:    #A6ABB0;
-  --night:   #0B0B06;
+  --ink: #F6F0E0; --ink-dim: #C6BEAC; --mist: #A6ABB0; --night: #0B0B06;
 
   --serif: "Noto Serif SC", "Songti SC", "Source Han Serif SC", Georgia, serif;
   --latin: "EB Garamond", "Noto Serif SC", Georgia, serif;
-
   color-scheme: dark;
 }
 *{ box-sizing: border-box; }
 html, body{ height: 100%; margin: 0; }
 body{
-  background: var(--night);
-  color: var(--ink);
-  font-family: var(--serif);
-  overflow: hidden;
+  background: var(--night); color: var(--ink);
+  font-family: var(--serif); overflow: hidden;
   -webkit-tap-highlight-color: transparent;
 }
 #stage{ position: relative; height: 100%; overflow: hidden; background: var(--night); }
 
 /* ───────── 照片与光 ───────── */
-.photo{
-  position: absolute; inset: 0;
-  background-size: cover; background-position: center;
-  pointer-events: none;
-}
+.photo{ position: absolute; inset: 0; background-size: cover; background-position: center; pointer-events: none; }
 #base{ filter: brightness(var(--bright, .86)) saturate(1.04); transition: filter 1.4s ease; }
 #stage[data-who="ended"] #base{ filter: brightness(.2) saturate(.3); }
-
-.glow{
-  position: absolute; inset: 0; pointer-events: none;
-  mix-blend-mode: screen; opacity: 0; transition: opacity .9s ease;
-}
+.glow{ position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; opacity: 0; transition: opacity .9s ease; }
 #stage[data-who="ke"]  #glowKe { opacity: 1; animation: breatheKe  5.2s ease-in-out infinite; }
 #stage[data-who="hua"] #glowHua{ opacity: 1; animation: breatheHua 4.0s ease-in-out infinite; }
 @keyframes breatheKe { 0%,100%{ opacity:.82 } 50%{ opacity:1 } }
 @keyframes breatheHua{ 0%,100%{ opacity:.80 } 50%{ opacity:1 } }
-
-#fx{ position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; mix-blend-mode: screen; }
+#fx{ position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; mix-blend-mode: var(--fx-blend, screen); }
 
 /* ───────── 头 ───────── */
 header{
   position: absolute; z-index: 4; top: 0; left: 0; right: 0;
-  padding-top: max(24px, env(safe-area-inset-top, 0px));
+  padding-top: max(24px, env(safe-area-inset-top, 0px)); padding-bottom: 28px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   text-align: center;
-  background: linear-gradient(to bottom, rgba(8,8,4,.5), transparent);
+  background: linear-gradient(to bottom, rgba(var(--head-bg),.5), rgba(var(--head-bg),0));
 }
 #who{
-  margin: 0; font-size: 1.42rem; font-weight: 500; letter-spacing: .18em;
-  text-shadow: 0 1px 3px rgba(8,8,4,.8), 0 2px 16px rgba(8,8,4,.6);
+  margin: 0; font-size: 1.42rem; font-weight: 500; letter-spacing: .18em; color: var(--head-ink);
+  text-shadow: 0 1px 3px rgba(var(--head-bg),.8), 0 2px 16px rgba(var(--head-bg),.6);
 }
 #clock{
-  font-family: var(--latin); font-size: .95rem; letter-spacing: .24em;
-  color: var(--ink-dim); font-variant-numeric: tabular-nums;
-  margin-top: 6px; min-height: 1.2em; text-shadow: 0 1px 10px rgba(8,8,4,.85);
+  font-family: var(--latin); font-size: .95rem; letter-spacing: .24em; color: var(--head-dim);
+  font-variant-numeric: tabular-nums; margin-top: 6px; min-height: 1.2em;
+  text-shadow: 0 1px 8px rgba(var(--head-bg),.9);
 }
+#music{
+  position: absolute; top: max(22px, env(safe-area-inset-top, 0px));
+  right: max(14px, env(safe-area-inset-right, 0px));
+  width: 38px; height: 38px; padding: 0; font-size: 1rem; letter-spacing: 0;
+}
+#music[aria-pressed="false"]{ opacity: .55; }
 
 /* ───────── 字幕 ───────── */
 .say{
@@ -81,30 +81,45 @@ header{
   left: max(22px, env(safe-area-inset-left, 0px));
   right: max(22px, env(safe-area-inset-right, 0px));
   opacity: 0; transition: opacity .55s ease, transform .55s ease;
-  text-shadow: 0 1px 2px rgba(8,8,4,.92), 0 2px 7px rgba(8,8,4,.75), 0 4px 22px rgba(8,8,4,.6);
 }
 .say.on{ opacity: 1; transform: translateY(0); }
-#sayKe { top: var(--keTop, 15%); text-align: left;  transform: translateY(8px); }
-#sayHua{ top: var(--huaTop, 67%); text-align: right; transform: translateY(-8px);
-  font-size: 1.22rem; font-weight: 500; line-height: 1.8; color: #FFF0E9; }
-#sayHua.partial{ color: #DCD5C4; font-weight: 400; }
-.say .en{ display: block; font-family: var(--latin); font-size: 1.32rem; line-height: 1.5; color: #FFF7E4; }
-.say .zh{ display: block; margin-top: .3em; font-size: .92rem; line-height: 1.7; color: #EDE3CF; }
+#sayKe{
+  top: var(--keTop, 15%); text-align: left; transform: translateY(8px);
+  text-shadow: 0 1px 2px rgba(var(--ke-h),.95), 0 2px 8px rgba(var(--ke-h),.8), 0 0 24px rgba(var(--ke-h),.65);
+}
+#sayHuaWrap{ top: var(--huaTop, 67%); text-align: right; transform: translateY(-8px); }
+#sayHua{
+  --fog: var(--fog-hua);
+  text-align: right;
+  font-size: 1.22rem; font-weight: 500; line-height: 1.8; color: var(--hua-ink);
+  text-shadow: 0 1px 2px rgba(var(--hua-h),.95), 0 2px 8px rgba(var(--hua-h),.8), 0 0 24px rgba(var(--hua-h),.65);
+}
+#sayHua.partial{ color: var(--hua-dim); font-weight: 400; }
+.say .en{ display: block; font-family: var(--latin); font-size: 1.34rem; font-weight: 500; line-height: 1.5; color: var(--ke-ink); }
+.say .zh{ display: block; margin-top: .3em; font-size: .94rem; font-weight: 500; line-height: 1.7; color: var(--ke-zh); }
 .say .subs{ display: block; margin-top: 12px; }
+/* 背景碎的主题（雨、雪）：字后面起一小片雾，边缘是软的 */
+.fog{
+  margin-left: -14px; margin-right: -14px; padding: 10px 14px; border-radius: 16px;
+  background: var(--fog, transparent);
+  box-shadow: 0 0 22px 10px var(--fog, transparent);
+  backdrop-filter: blur(var(--fog-blur, 0px)); -webkit-backdrop-filter: blur(var(--fog-blur, 0px));
+}
+#sayHua.fog{ display: inline-block; max-width: 100%; }
 .say .subs[hidden]{ display: none; }
 
 /* 语音条 */
 .bubble{
-  display: inline-flex; align-items: center; gap: 12px;
-  min-width: 132px; max-width: 72%;
+  display: inline-flex; align-items: center; gap: 12px; min-width: 132px; max-width: 72%;
   padding: 11px 18px 11px 14px;
-  font: 500 1rem var(--latin); letter-spacing: .06em; color: var(--night);
-  background: linear-gradient(100deg, var(--gold), var(--apricot));
+  font: 500 1rem var(--latin); letter-spacing: .06em; color: var(--bubble-ink);
+  background: linear-gradient(100deg, var(--a1), var(--a2));
   border: none; border-radius: 6px 20px 20px 20px;
-  box-shadow: 0 6px 22px rgba(8,8,4,.45);
+  box-shadow: 0 6px 22px rgba(0,0,0,.35);
   cursor: pointer; position: relative; text-shadow: none;
+  backdrop-filter: none; -webkit-backdrop-filter: none;
 }
-.bubble:focus-visible{ outline: 2px solid var(--ink); outline-offset: 3px; }
+.bubble:focus-visible{ outline: 2px solid var(--ke-ink); outline-offset: 3px; }
 .bubble .wave{ display: inline-flex; align-items: center; gap: 3px; height: 16px; }
 .bubble .wave i{ width: 3px; border-radius: 2px; background: currentColor; display: block; }
 .bubble .wave i:nth-child(1){ height: 6px; } .bubble .wave i:nth-child(2){ height: 11px; } .bubble .wave i:nth-child(3){ height: 16px; }
@@ -112,10 +127,7 @@ header{
 .bubble.playing .wave i:nth-child(2){ animation-delay: .15s; } .bubble.playing .wave i:nth-child(3){ animation-delay: .3s; }
 @keyframes bar{ 0%,100%{ transform: scaleY(.45) } 50%{ transform: scaleY(1) } }
 .bubble .dur{ margin-left: auto; font-variant-numeric: tabular-nums; }
-.bubble.unread::after{
-  content: ""; position: absolute; top: 8px; right: -14px;
-  width: 8px; height: 8px; border-radius: 50%; background: var(--coral);
-}
+.bubble.unread::after{ content: ""; position: absolute; top: 8px; right: -14px; width: 8px; height: 8px; border-radius: 50%; background: #FC5A6A; }
 .bubble.loading{ opacity: .75; }
 
 /* ───────── 底部 ───────── */
@@ -123,53 +135,44 @@ header{
   position: absolute; z-index: 4; left: 0; right: 0; bottom: 0;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-bottom: max(14px, env(safe-area-inset-bottom, 0px));
-  padding-top: 30px;
-  background: linear-gradient(to top, rgba(8,8,4,.66), transparent);
+  padding-bottom: max(14px, env(safe-area-inset-bottom, 0px)); padding-top: 34px;
+  background: linear-gradient(to top, rgba(var(--foot-bg),.72), rgba(var(--foot-bg),0));
   display: flex; flex-direction: column; align-items: center; gap: 12px;
 }
-#state{
-  font-size: .76rem; letter-spacing: .2em; color: var(--ink-dim);
-  min-height: 1em; text-align: center; text-shadow: 0 1px 10px rgba(8,8,4,.9);
-}
+#state{ font-size: .78rem; letter-spacing: .18em; color: var(--state-ink); min-height: 1em; text-align: center; text-shadow: 0 1px 8px rgba(var(--foot-bg),.95); }
 #controls{ display: flex; gap: 10px; justify-content: center; align-items: center; width: 100%; }
 button{
   font-family: var(--serif); font-weight: 400; font-size: .9rem; letter-spacing: .1em;
-  color: var(--ink); background: rgba(10,10,6,.42);
-  border: 1px solid rgba(246,240,224,.26); border-radius: 999px;
+  color: var(--ink); background: var(--btn-bg);
+  border: 1px solid var(--btn-line); border-radius: 999px;
   padding: 10px 19px; cursor: pointer;
   backdrop-filter: blur(10px) saturate(.6); -webkit-backdrop-filter: blur(10px) saturate(.6);
   transition: background .22s, border-color .22s, transform .1s;
 }
 button:active{ transform: scale(.96); }
-button:focus-visible{ outline: 2px solid var(--gold); outline-offset: 3px; }
-button.hang{ background: rgba(120,16,42,.44); border-color: rgba(196,32,83,.55); }
-
+button:focus-visible{ outline: 2px solid var(--a1); outline-offset: 3px; }
+button.hang{ background: var(--hang); border-color: rgba(255,140,160,.45); }
 #hold{
-  flex: 1 1 auto; max-width: 260px; padding: 15px 10px;
-  font-size: 1rem; letter-spacing: .3em;
+  flex: 1 1 auto; max-width: 260px; padding: 15px 10px; font-size: 1rem; letter-spacing: .3em;
   -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: none;
 }
-#hold.down{ background: rgba(252,128,138,.35); border-color: var(--coral); transform: scale(.97); }
-#hold.cancel{ background: rgba(120,16,42,.55); }
-
+#hold.down{ background: var(--hold); border-color: var(--a1); transform: scale(.97); }
+#hold.cancel{ background: rgba(120,16,42,.6); }
 #handle{
   border: none; background: none; backdrop-filter: none; -webkit-backdrop-filter: none;
-  padding: 2px 10px 4px; font-size: .74rem; letter-spacing: .2em; color: var(--mist);
+  padding: 2px 10px 4px; font-size: .74rem; letter-spacing: .2em; color: var(--state-ink);
+  text-shadow: 0 1px 8px rgba(var(--foot-bg),.95);
 }
-#handle::before{
-  content: ""; display: block; width: 34px; height: 3px; margin: 0 auto 7px;
-  border-radius: 2px; background: rgba(246,240,224,.42);
-}
+#handle::before{ content: ""; display: block; width: 34px; height: 3px; margin: 0 auto 7px; border-radius: 2px; background: currentColor; opacity: .55; }
 
 /* ───────── 抽屉（说过的话 / 设置） ───────── */
 .sheet{
-  position: absolute; z-index: 6; left: 0; right: 0; bottom: 0; max-height: 80%;
+  position: absolute; z-index: 6; left: 0; right: 0; bottom: 0; max-height: 82%;
   display: flex; flex-direction: column;
   transform: translateY(101%); transition: transform .42s cubic-bezier(.3,0,.2,1);
-  background: rgba(9,9,5,.92);
+  background: var(--sheet);
   backdrop-filter: blur(22px) saturate(.5); -webkit-backdrop-filter: blur(22px) saturate(.5);
-  border-top: 1px solid rgba(249,222,131,.22); border-radius: 14px 14px 0 0;
+  border-top: 1px solid var(--sheet-line); border-radius: 14px 14px 0 0;
 }
 .sheet.open{ transform: translateY(0); }
 #setup{ z-index: 7; }
@@ -185,34 +188,32 @@ button.hang{ background: rgba(120,16,42,.44); border-color: rgba(196,32,83,.55);
   padding: 16px max(18px, env(safe-area-inset-right, 0px)) max(20px, env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px));
 }
 .sheetHead button{ padding: 6px 14px; font-size: .8rem; background: rgba(246,240,224,.08); }
-
 .rec{ display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .rec .lab{ font-size: .68rem; letter-spacing: .2em; font-family: var(--latin); font-variant-numeric: tabular-nums; }
-.rec.ke  .lab{ color: var(--gold); }
-.rec.hua .lab{ color: var(--coral); text-align: right; }
+.rec.ke  .lab{ color: var(--lab-ke); }
+.rec.hua .lab{ color: var(--lab-hua); text-align: right; }
 .rec .txt{ font-size: .98rem; line-height: 1.8; overflow-wrap: anywhere; }
 .rec.ke .txt{ font-family: var(--latin); font-size: 1.04rem; }
 .rec.hua .txt{ text-align: right; }
 .rec .zh{ font-size: .84rem; line-height: 1.7; color: var(--ink-dim); overflow-wrap: anywhere; }
 .replay{ align-self: flex-start; margin-top: 4px; padding: 5px 12px; font-size: .74rem; }
 #empty{ color: var(--mist); font-size: .88rem; line-height: 1.9; text-align: center; padding: 26px 8px; }
-
 #setupForm{ gap: 8px; }
 #setupForm label{ font-size: .78rem; letter-spacing: .12em; color: var(--ink-dim); margin-top: 6px; }
-#setupForm input{
+#setupForm input:not([type="checkbox"]){
   font: 1rem var(--latin); color: var(--ink); background: rgba(246,240,224,.06);
   border: 1px solid rgba(246,240,224,.2); border-radius: 10px; padding: 10px 12px; min-width: 0;
 }
-#setupForm input:focus-visible{ outline: 2px solid var(--gold); outline-offset: 1px; }
+#setupForm input:focus-visible{ outline: 2px solid var(--a1); outline-offset: 1px; }
 #walls{ display: flex; gap: 10px; flex-wrap: wrap; }
 .wall{
-  width: 72px; height: 96px; padding: 0; border-radius: 10px; overflow: hidden;
+  width: 64px; height: 92px; padding: 0; border-radius: 10px; overflow: hidden;
   background-size: cover; background-position: center;
   border: 2px solid transparent; backdrop-filter: none; -webkit-backdrop-filter: none;
 }
-.wall[aria-pressed="true"]{ border-color: var(--gold); }
+.wall[aria-pressed="true"]{ border-color: var(--a1); }
 #setupSave{ margin-top: 12px; align-self: flex-start; }
-.note{ font-size: .8rem; color: var(--gold); min-height: 1em; }
+.note{ font-size: .8rem; color: var(--a1); min-height: 1em; }
 
 @media (prefers-reduced-motion: reduce){
   .glow{ animation: none !important; }
@@ -233,15 +234,16 @@ button.hang{ background: rgba(120,16,42,.44); border-color: rgba(196,32,83,.55);
     <h1 id="who">小克</h1>
     <div id="clock">00:00</div>
   </header>
+  <button id="music" type="button" aria-pressed="false" aria-label="背景音乐">♪</button>
 
   <div class="say" id="sayKe">
     <button class="bubble" id="bubble" type="button" aria-label="小克的语音，点一下听">
       <span class="wave" aria-hidden="true"><i></i><i></i><i></i></span>
       <span class="dur" id="dur">…</span>
     </button>
-    <span class="subs" id="subs" hidden></span>
+    <span class="subs fog" id="subs" hidden></span>
   </div>
-  <div class="say" id="sayHua" aria-live="polite"></div>
+  <div class="say" id="sayHuaWrap"><div class="fog" id="sayHua" aria-live="polite"></div></div>
 
   <div id="bottom">
     <div id="state">还没接通</div>
@@ -284,12 +286,14 @@ button.hang{ background: rgba(120,16,42,.44); border-color: rgba(196,32,83,.55);
 </div>
 
 <script>
-/* 壁纸。每张都有一张"光的地图"：坐标是照片上的比例（0..1）。
-   rays：每道光从我那头 [ax,ay] 走到她那头 [bx,by]；pollen：她那一半浮起来的光点。 */
+/* 壁纸 = 一整套主题。坐标都是照片上的比例（0..1）。
+   fx：'rays' 光沿光线淌（rays 每道从我这头 [ax,ay] 到她那头 [bx,by]）；'rain' 车窗上的雨滴；'snow' 雪。
+   colors 里的 *-h 是光晕颜色（r,g,b）：照片亮就用浅光晕配深字，照片暗就用深光晕配白字。 */
 var WALLS = {
   valley: {
     name: '山谷', src: 'wallpapers/valley.jpg', thumb: 'wallpapers/valley-s.jpg', w: 736, h: 1104,
-    bright: .86, keTop: '15%', huaTop: '67%',
+    bright: .86, keTop: '15%', huaTop: '67%', fx: 'rays',
+    colors: {},
     glowKe: 'radial-gradient(120% 62% at 50% 6%, rgba(250,181,116,.60) 0%, transparent 62%), radial-gradient(90% 52% at 46% 30%, rgba(252,128,138,.34) 0%, transparent 66%), radial-gradient(70% 44% at 58% 24%, rgba(249,222,131,.30) 0%, transparent 70%)',
     glowHua: 'radial-gradient(110% 46% at 46% 102%, rgba(196,32,83,.58) 0%, transparent 60%), radial-gradient(85% 40% at 70% 108%, rgba(252,128,138,.44) 0%, transparent 64%), radial-gradient(70% 36% at 22% 110%, rgba(250,181,116,.32) 0%, transparent 66%)',
     rays: [[0.2044,0.3188,0.2913,0.5109],[0.2654,0.3188,0.3391,0.5174],[0.3265,0.3188,0.3858,0.524],[0.3875,0.3188,0.4315,0.5305],[0.4485,0.3188,0.4761,0.537],[0.5095,0.3188,0.5197,0.5435],[0.5705,0.3188,0.5624,0.5442],[0.6315,0.3188,0.6058,0.5377],[0.6926,0.3188,0.6504,0.5312],[0.7536,0.3188,0.6959,0.5247],[0.8146,0.3188,0.7425,0.5182]],
@@ -298,7 +302,16 @@ var WALLS = {
   },
   moon: {
     name: '月亮', src: 'wallpapers/moon.jpg', thumb: 'wallpapers/moon-s.jpg', w: 1080, h: 1344,
-    bright: .96, keTop: '19%', huaTop: '74%',
+    bright: .96, keTop: '19%', huaTop: '75%', fx: 'rays',
+    colors: {
+      '--a1': '#CFF3FF', '--a2': '#7FD3E6', '--bubble-ink': '#06222A',
+      '--ke-ink': '#EEF9FF', '--ke-zh': '#CFE6EE', '--ke-h': '2,14,22',
+      '--hua-ink': '#F2FFFB', '--hua-dim': '#C4DAD4', '--hua-h': '2,14,18',
+      '--head-bg': '2,14,22', '--foot-bg': '2,12,16', '--state-ink': '#BFD8DE',
+      '--btn-bg': 'rgba(4,24,30,.48)', '--btn-line': 'rgba(200,240,255,.3)',
+      '--sheet': 'rgba(4,16,20,.93)', '--sheet-line': 'rgba(160,225,245,.25)',
+      '--lab-ke': '#9EE3F5', '--lab-hua': '#CFEFD9', '--hold': 'rgba(127,211,230,.32)'
+    },
     glowKe: 'radial-gradient(90% 60% at 55% 22%, rgba(120,220,255,.45) 0%, transparent 64%), radial-gradient(60% 40% at 48% 26%, rgba(255,235,210,.22) 0%, transparent 70%)',
     glowHua: 'radial-gradient(90% 34% at 45% 60%, rgba(255,250,240,.42) 0%, transparent 66%), radial-gradient(110% 40% at 60% 104%, rgba(150,210,190,.36) 0%, transparent 64%)',
     rays: [[0.2315,0.1116,0.3611,0.5208],[0.2778,0.0893,0.3889,0.5208],[0.3519,0.1786,0.4259,0.5208],[0.4074,0.1414,0.4537,0.5246],[0.4444,0.2455,0.4676,0.5246],[0.5926,0.2455,0.5,0.5283],[0.6667,0.0818,0.5185,0.5283],[0.7315,0.186,0.5463,0.5432],[0.7685,0.4762,0.5648,0.5729]],
@@ -307,18 +320,63 @@ var WALLS = {
   },
   road: {
     name: '公路', src: 'wallpapers/road.jpg', thumb: 'wallpapers/road-s.jpg', w: 1202, h: 1600,
-    bright: .86, keTop: '41%', huaTop: '69%',
+    bright: .86, keTop: '40%', huaTop: '76%', fx: 'rays',
+    colors: {
+      '--a1': '#FFD08A', '--a2': '#F48C5C', '--bubble-ink': '#2A1306',
+      '--ke-ink': '#13233A', '--ke-zh': '#22344E', '--ke-h': '255,248,236',
+      '--hua-ink': '#FFF4E6', '--hua-dim': '#E6D6C2', '--hua-h': '14,16,22',
+      '--head-bg': '20,34,58', '--foot-bg': '12,16,24', '--state-ink': '#E9DCCB',
+      '--btn-bg': 'rgba(16,26,44,.48)', '--btn-line': 'rgba(255,220,180,.32)',
+      '--sheet': 'rgba(12,18,30,.93)', '--sheet-line': 'rgba(255,200,140,.25)',
+      '--lab-ke': '#FFC27A', '--lab-hua': '#9CC3F0', '--hold': 'rgba(244,140,92,.35)',
+      '--fog': 'rgba(255,248,236,.38)', '--fog-blur': '4px'
+    },
     glowKe: 'radial-gradient(80% 44% at 74% 32%, rgba(255,196,120,.55) 0%, transparent 62%), radial-gradient(70% 40% at 60% 22%, rgba(255,235,200,.28) 0%, transparent 70%)',
     glowHua: 'radial-gradient(110% 40% at 62% 100%, rgba(255,190,110,.42) 0%, transparent 62%), radial-gradient(80% 30% at 30% 96%, rgba(200,230,140,.28) 0%, transparent 66%)',
     rays: [[0.466,0.225,0.5925,0.7725],[0.5459,0.26,0.5992,0.7725],[0.6525,0.295,0.6059,0.7725],[0.6924,0.305,0.6125,0.7725],[0.7324,0.315,0.6192,0.7725],[0.7723,0.33,0.6258,0.7725],[0.8123,0.345,0.6325,0.775],[0.8522,0.36,0.6391,0.775]],
     dust: [255,236,200], halo: [255,190,120],
     pollen: { x0: .3, x1: 1, y0: .8, y1: 1, top0: .74, top1: .8, colors: [[255,236,140],[255,210,120]] }
+  },
+  rain: {
+    name: '雨天', src: 'wallpapers/rain.jpg', thumb: 'wallpapers/rain-s.jpg', w: 512, h: 1024,
+    bright: .92, keTop: '17%', huaTop: '71%', fx: 'rain',
+    colors: {
+      '--a1': '#DCEBCF', '--a2': '#9DBF8E', '--bubble-ink': '#112014',
+      '--ke-ink': '#14261B', '--ke-zh': '#2A3F31', '--ke-h': '240,246,238',
+      '--hua-ink': '#F1F7EE', '--hua-dim': '#CFDCCB', '--hua-h': '8,16,10',
+      '--head-ink': '#14261B', '--head-dim': '#3A5241', '--head-bg': '236,242,232',
+      '--foot-bg': '8,16,10', '--state-ink': '#D3E2CD',
+      '--btn-bg': 'rgba(14,28,18,.5)', '--btn-line': 'rgba(210,235,200,.32)',
+      '--sheet': 'rgba(10,18,12,.93)', '--sheet-line': 'rgba(190,225,175,.25)',
+      '--lab-ke': '#BFE0AE', '--lab-hua': '#E6EFE1', '--hold': 'rgba(157,191,142,.4)',
+      '--fog': 'rgba(236,243,232,.62)', '--fog-blur': '6px'
+    },
+    glowKe: 'radial-gradient(110% 50% at 50% 0%, rgba(245,255,235,.55) 0%, transparent 64%), radial-gradient(60% 40% at 40% 30%, rgba(220,245,200,.3) 0%, transparent 70%)',
+    glowHua: 'radial-gradient(100% 40% at 40% 100%, rgba(170,220,150,.35) 0%, transparent 64%)'
+  },
+  snow: {
+    name: '冬天', src: 'wallpapers/snow.jpg', thumb: 'wallpapers/snow-s.jpg', w: 768, h: 1344,
+    bright: .95, keTop: '20%', huaTop: '63%', fx: 'snow',
+    colors: {
+      '--a1': '#FFE6B8', '--a2': '#F0A866', '--bubble-ink': '#2A1606',
+      '--ke-ink': '#172235', '--ke-zh': '#2B3A52', '--ke-h': '255,255,255',
+      '--hua-ink': '#FFF6EC', '--hua-dim': '#E8DCCF', '--hua-h': '10,12,22',
+      '--head-ink': '#172235', '--head-dim': '#3C4A61', '--head-bg': '244,246,250',
+      '--foot-bg': '16,20,32', '--state-ink': '#EEF1F6',
+      '--btn-bg': 'rgba(20,26,40,.52)', '--btn-line': 'rgba(230,236,245,.36)',
+      '--sheet': 'rgba(16,20,30,.94)', '--sheet-line': 'rgba(255,214,160,.28)',
+      '--lab-ke': '#FFD79A', '--lab-hua': '#F3B7A6', '--hold': 'rgba(240,168,102,.38)',
+      '--fog': 'rgba(244,247,252,.66)', '--fog-hua': 'rgba(14,18,30,.42)', '--fog-blur': '6px'
+    },
+    glowKe: 'radial-gradient(110% 50% at 50% 4%, rgba(255,255,255,.5) 0%, transparent 62%), radial-gradient(70% 40% at 46% 34%, rgba(220,232,255,.3) 0%, transparent 70%)',
+    glowHua: 'radial-gradient(60% 26% at 92% 68%, rgba(255,170,90,.55) 0%, transparent 70%), radial-gradient(50% 24% at 4% 66%, rgba(255,140,90,.45) 0%, transparent 70%), radial-gradient(90% 30% at 50% 100%, rgba(255,200,150,.25) 0%, transparent 70%)'
   }
 };
 </script>
 
 <script>
-/* 光：沿光线淌的流光、光束里的尘埃、她那一半浮起来的光点。全画在一张 canvas 上，30fps，切后台就停。 */
+/* 动态：rays 光沿光线淌 + 尘埃 + 光点；rain 车窗上的雨滴，偶尔一颗拖着水痕滑下去；snow 雪。
+   一张 canvas，30fps，切后台就停。谁在说话，对应那一半就更亮、更快。 */
 (function () {
   var cv = document.getElementById('fx'), stage = document.getElementById('stage');
   if (!cv || !cv.getContext) return;
@@ -339,75 +397,37 @@ var WALLS = {
   function S(n) { return n * Math.max(W / 412, .8) * dpr; }
   function rnd(a, b) { return a + Math.random() * (b - a); }
   function rgba(c, a) { return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')'; }
-  function rp(i, v, jit) {                 // 第 i 道光上，从我这头 v=0 到她那头 v=1
-    var r = M.rays[i], ax = r[0], ay = r[1], bx = r[2], by = r[3];
-    var x = ax + (bx - ax) * v, y = ay + (by - ay) * v;
-    if (jit) { var dx = by - ay, dy = -(bx - ax), l = Math.hypot(dx, dy) || 1; x += dx / l * jit; y += dy / l * jit; }
+
+  var dust = [], pollen = [], glints = [], drops = [], trails = [], flakes = [];
+
+  // ---- rays ----
+  function rp(i, v, jit) {
+    var r = M.rays[i], x = r[0] + (r[2] - r[0]) * v, y = r[1] + (r[3] - r[1]) * v;
+    if (jit) { var dx = r[3] - r[1], dy = -(r[2] - r[0]), l = Math.hypot(dx, dy) || 1; x += dx / l * jit; y += dy / l * jit; }
     return { x: x, y: y };
   }
-
-  var dust = [], pollen = [], glints = [];
   function newPollen(p, fresh) {
     var P = M.pollen;
-    p.x = rnd(P.x0, P.x1);
-    p.y = fresh ? rnd(P.y0, P.y1) : rnd(P.y1 - .08, P.y1 + .02);
+    p.x = rnd(P.x0, P.x1); p.y = fresh ? rnd(P.y0, P.y1) : rnd(P.y1 - .08, P.y1 + .02);
     p.vy = rnd(.00016, .0004); p.vx = rnd(-.0001, .0001);
-    p.r = rnd(.8, 2.1); p.ph = rnd(0, 6.28);
-    p.c = P.colors[Math.random() < .5 ? 0 : 1];
-    p.top = rnd(P.top0, P.top1);
+    p.r = rnd(.8, 2.1); p.ph = rnd(0, 6.28); p.c = P.colors[Math.random() < .5 ? 0 : 1]; p.top = rnd(P.top0, P.top1);
     return p;
   }
-  function load(map) {
-    M = map; fit();
-    dust = []; pollen = []; glints = [];
-    for (var i = 0; i < 38; i++) dust.push({ ray: Math.floor(Math.random() * M.rays.length), v: Math.random(), dv: rnd(.0009, .0022), j: rnd(-.012, .012), r: rnd(.7, 1.9), ph: rnd(0, 6.28), tw: rnd(.6, 1.6) });
-    for (var k = 0; k < 30; k++) pollen.push(newPollen({}, true));
-  }
-
-  function wave(dir) {                     // 'toHua' 我→她；'toKe' 她→我
-    var n = M ? M.rays.length : 0;
-    for (var k = 0; k < n; k++) {
-      var mid = Math.abs((k + .5) / n - .5) * 2;
-      glints.push({ ray: k, dir: dir, a: rnd(.65, .95), dur: rnd(1000, 1300), t: -(mid * 260 + rnd(0, 90)) });
-    }
-  }
-  window.FX = { load: load, wave: reduce ? function () {} : wave };
-
   function drawGlint(g) {
     var p = Math.min(1, Math.max(0, g.t / g.dur));
-    var head = g.dir === 'toHua' ? p * 1.25 : 1 - p * 1.25;
-    var tail = g.dir === 'toHua' ? head - .28 : head + .28;
+    var head = g.dir === 'toHua' ? p * 1.25 : 1 - p * 1.25, tail = g.dir === 'toHua' ? head - .28 : head + .28;
     var a = g.a * Math.sin(Math.PI * p);
     if (a <= .01) return;
     var h = rp(g.ray, Math.max(0, Math.min(1, head))), t = rp(g.ray, Math.max(0, Math.min(1, tail)));
     var gr = ctx.createLinearGradient(X(t.x), Y(t.y), X(h.x), Y(h.y));
-    gr.addColorStop(0, rgba(M.halo, 0));
-    gr.addColorStop(.6, rgba(M.halo, a * .45));
-    gr.addColorStop(1, rgba(M.dust, a * .7));
+    gr.addColorStop(0, rgba(M.halo, 0)); gr.addColorStop(.6, rgba(M.halo, a * .45)); gr.addColorStop(1, rgba(M.dust, a * .7));
     ctx.strokeStyle = gr; ctx.lineCap = 'round';
     ctx.lineWidth = S(12); ctx.globalAlpha = .3;
     ctx.beginPath(); ctx.moveTo(X(t.x), Y(t.y)); ctx.lineTo(X(h.x), Y(h.y)); ctx.stroke();
     ctx.lineWidth = S(1.5); ctx.globalAlpha = .8; ctx.stroke();
   }
-
-  var eKe = 0, eHua = 0, live = 1, lastIdle = 0, last = 0, acc = 0;
-  function frame(now) {
-    requestAnimationFrame(frame);
-    if (!M || document.hidden) { last = now; return; }
-    var dt = now - (last || now); last = now; acc += dt;
-    if (acc < 33) return;
-    dt = acc; acc = 0;
-    var step = Math.min(dt, 100) / 33;
-    var who = stage.getAttribute('data-who');
-    eKe  += ((who === 'ke'  ? 1 : 0) - eKe)  * .06 * step;
-    eHua += ((who === 'hua' ? 1 : 0) - eHua) * .06 * step;
-    live += ((who === 'ended' ? 0 : 1) - live) * .04 * step;
-
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.clearRect(0, 0, cv.width, cv.height);
-    if (live < .01) return;
+  function stepRays(now, dt, step, who) {
     ctx.globalCompositeOperation = 'lighter';
-
     if (now - lastIdle > 2600 && who !== 'ended') {
       lastIdle = now;
       glints.push({ ray: Math.floor(Math.random() * M.rays.length), dir: 'toHua', a: .22 + eKe * .25, dur: rnd(2600, 3400), t: 0 });
@@ -417,7 +437,6 @@ var WALLS = {
       if (g.t > g.dur) { glints.splice(gi, 1); continue; }
       if (g.t > 0) drawGlint(g);
     }
-
     var dSpeed = 1 + eKe * 1.6;
     for (var di = 0; di < dust.length; di++) {
       var d = dust[di];
@@ -431,12 +450,10 @@ var WALLS = {
       ctx.globalAlpha = a; ctx.fillStyle = rgba(M.dust, 1);
       ctx.beginPath(); ctx.arc(X(pt.x), Y(pt.y), r, 0, 6.283); ctx.fill();
     }
-
     var pSpeed = 1 + eHua * 1.4, P = M.pollen;
     for (var pi = 0; pi < pollen.length; pi++) {
       var p = pollen[pi];
-      p.y -= p.vy * pSpeed * step; p.ph += .04 * step;
-      p.x += (p.vx + Math.sin(p.ph) * .00024) * step;
+      p.y -= p.vy * pSpeed * step; p.ph += .04 * step; p.x += (p.vx + Math.sin(p.ph) * .00024) * step;
       if (p.y < p.top) newPollen(p, false);
       var life = Math.min(1, (P.y1 + .02 - p.y) / .05) * Math.min(1, (p.y - p.top) / .06);
       var pa = Math.max(0, life) * (.22 + .78 * eHua) * live * (.7 + .3 * Math.sin(p.ph * 2.3));
@@ -446,6 +463,116 @@ var WALLS = {
       ctx.globalAlpha = pa; ctx.fillStyle = 'rgb(255,250,236)';
       ctx.beginPath(); ctx.arc(X(p.x), Y(p.y), pr, 0, 6.283); ctx.fill();
     }
+  }
+
+  // ---- rain：屏幕坐标（0..1），雨滴挂在"玻璃"上，跟照片无关 ----
+  function newDrop(big) {
+    return { x: Math.random(), y: Math.random() * .96, r: big ? rnd(3.2, 5.5) : rnd(1, 3.2), vy: 0, slide: false, age: 0, wob: rnd(0, 6.28) };
+  }
+  function drawDrop(d, a) {
+    var x = d.x * W * dpr, y = d.y * H * dpr, r = S(d.r);
+    ctx.globalAlpha = a;
+    var g = ctx.createRadialGradient(x - r * .3, y - r * .35, r * .1, x, y, r);
+    g.addColorStop(0, 'rgba(255,255,255,.55)'); g.addColorStop(.45, 'rgba(235,245,235,.12)'); g.addColorStop(1, 'rgba(20,40,25,.28)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.ellipse(x, y, r * .92, r, 0, 0, 6.283); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.85)';
+    ctx.beginPath(); ctx.arc(x - r * .32, y - r * .38, Math.max(.6 * dpr, r * .22), 0, 6.283); ctx.fill();
+  }
+  function stepRain(now, dt, step, who) {
+    ctx.globalCompositeOperation = 'source-over';
+    var rate = (.8 + eHua * 2.6) * live;                 // 每秒落上来几颗
+    if (Math.random() < rate * dt / 1000 && drops.length < 150) drops.push(newDrop(Math.random() < .12));
+    var slideChance = (.05 + eHua * .35) * dt / 1000;
+    for (var ti = trails.length - 1; ti >= 0; ti--) {
+      var t = trails[ti]; t.a -= .004 * step;
+      if (t.a <= 0) { trails.splice(ti, 1); continue; }
+      ctx.globalAlpha = t.a; ctx.fillStyle = 'rgba(235,245,235,.5)';
+      ctx.beginPath(); ctx.arc(t.x * W * dpr, t.y * H * dpr, S(t.r), 0, 6.283); ctx.fill();
+    }
+    for (var i = drops.length - 1; i >= 0; i--) {
+      var d = drops[i];
+      d.age += dt;
+      if (!d.slide && d.r > 2.6 && Math.random() < slideChance) d.slide = true;
+      if (d.slide) {
+        d.vy = Math.min(d.vy + .00004 * step, .006 + eHua * .004);
+        d.y += d.vy * step; d.wob += .2 * step; d.x += Math.sin(d.wob) * .0004;
+        if (Math.random() < .5) trails.push({ x: d.x, y: d.y - .004, r: d.r * rnd(.25, .4), a: .5 });
+        for (var j = drops.length - 1; j >= 0; j--) {        // 滑过去顺手吃掉路上的小水珠
+          var o = drops[j];
+          if (o !== d && !o.slide && Math.abs(o.x - d.x) * W < d.r * 1.6 && Math.abs(o.y - d.y) * H < d.r * 1.6) { d.r = Math.min(6.5, d.r + o.r * .25); drops.splice(j, 1); if (j < i) i--; }
+        }
+        if (d.y > 1.05) { drops.splice(i, 1); continue; }
+      }
+      drawDrop(d, Math.min(1, d.age / 300) * (.75 + .25 * eHua) * live);
+    }
+  }
+
+  // ---- snow ----
+  function newFlake(top) {
+    return { x: Math.random(), y: top ? -.03 : Math.random(), r: rnd(.8, 3.2), vy: rnd(.0006, .0016), ph: rnd(0, 6.28), sw: rnd(.0003, .0012) };
+  }
+  function stepSnow(now, dt, step, who) {
+    ctx.globalCompositeOperation = 'source-over';
+    var slow = 1 - eKe * .45;                           // 我说话时雪慢下来、亮起来
+    for (var i = 0; i < flakes.length; i++) {
+      var f = flakes[i];
+      f.y += f.vy * slow * step; f.ph += .03 * step; f.x += Math.sin(f.ph) * f.sw * step;
+      if (f.y > 1.03) flakes[i] = newFlake(true);
+      var x = f.x * W * dpr, y = f.y * H * dpr, r = S(f.r * (1 + eKe * .35 * (f.y < .55 ? 1 : 0)));
+      var a = (.55 + .35 * (f.r / 3.2)) * live;
+      ctx.globalAlpha = a * .35; ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath(); ctx.arc(x, y, r * 2.2, 0, 6.283); ctx.fill();
+      ctx.globalAlpha = a; ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath(); ctx.arc(x, y, r, 0, 6.283); ctx.fill();
+      ctx.globalAlpha = a * .5; ctx.fillStyle = 'rgba(70,80,100,1)';      // 一点点暗边，白天的雪才看得见
+      ctx.beginPath(); ctx.arc(x + r * .25, y + r * .35, r * .9, 0, 6.283); ctx.fill();
+      ctx.globalAlpha = a; ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath(); ctx.arc(x, y, r * .85, 0, 6.283); ctx.fill();
+    }
+  }
+
+  function load(map) {
+    M = map; fit();
+    dust = []; pollen = []; glints = []; drops = []; trails = []; flakes = [];
+    stage.style.setProperty('--fx-blend', M.fx === 'rays' ? 'screen' : 'normal');
+    if (M.fx === 'rays') {
+      for (var i = 0; i < 38; i++) dust.push({ ray: Math.floor(Math.random() * M.rays.length), v: Math.random(), dv: rnd(.0009, .0022), j: rnd(-.012, .012), r: rnd(.7, 1.9), ph: rnd(0, 6.28), tw: rnd(.6, 1.6) });
+      for (var k = 0; k < 30; k++) pollen.push(newPollen({}, true));
+    } else if (M.fx === 'rain') {
+      for (var n = 0; n < 70; n++) { var d = newDrop(Math.random() < .1); d.age = 1000; drops.push(d); }
+    } else if (M.fx === 'snow') {
+      for (var s = 0; s < 80; s++) flakes.push(newFlake(false));
+    }
+  }
+  function wave(dir) {
+    if (!M || M.fx !== 'rays') return;
+    var n = M.rays.length;
+    for (var k = 0; k < n; k++) {
+      var mid = Math.abs((k + .5) / n - .5) * 2;
+      glints.push({ ray: k, dir: dir, a: rnd(.65, .95), dur: rnd(1000, 1300), t: -(mid * 260 + rnd(0, 90)) });
+    }
+  }
+  window.FX = { load: load, wave: reduce ? function () {} : wave };
+
+  var eKe = 0, eHua = 0, live = 1, lastIdle = 0, last = 0, acc = 0;
+  function frame(now) {
+    requestAnimationFrame(frame);
+    if (!M || document.hidden) { last = now; return; }
+    var dt = now - (last || now); last = now; acc += dt;
+    if (acc < 33) return;
+    dt = Math.min(acc, 100); acc = 0;
+    var step = dt / 33, who = stage.getAttribute('data-who');
+    eKe  += ((who === 'ke'  ? 1 : 0) - eKe)  * .06 * step;
+    eHua += ((who === 'hua' ? 1 : 0) - eHua) * .06 * step;
+    live += ((who === 'ended' ? 0 : 1) - live) * .04 * step;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    if (live < .01) return;
+    if (M.fx === 'rays') stepRays(now, dt, step, who);
+    else if (M.fx === 'rain') stepRain(now, dt, step, who);
+    else if (M.fx === 'snow') stepSnow(now, dt, step, who);
     ctx.globalAlpha = 1;
   }
   window.addEventListener('resize', fit);
@@ -460,21 +587,27 @@ var WALLS = {
 (function () {
   var $ = function (id) { return document.getElementById(id); };
   var stage = $('stage'), clock = $('clock'), stateEl = $('state');
-  var sayKe = $('sayKe'), sayHua = $('sayHua'), bubble = $('bubble'), durEl = $('dur'), subs = $('subs');
-  var callBtn = $('call'), holdBtn = $('hold'), gear = $('gear');
+  var sayKe = $('sayKe'), sayHua = $('sayHua'), sayHuaWrap = $('sayHuaWrap'), bubble = $('bubble'), durEl = $('dur'), subs = $('subs');
+  var callBtn = $('call'), holdBtn = $('hold'), gear = $('gear'), musicBtn = $('music');
   var handle = $('handle'), drawer = $('drawer'), log = $('log'), empty = $('empty'), setup = $('setup');
 
   function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
 
   // ---------- 设置 ----------
-  var CFG = { repo: 'Jenniferrr7/voice-call-data', gh: '', el: '', voice: '', wall: 'valley' };
-  try { var saved = JSON.parse(store('call.cfg') || '{}'); for (var k in CFG) if (saved[k]) CFG[k] = saved[k]; } catch (e) {}
+  var CFG = { repo: 'Jenniferrr7/voice-call-data', gh: '', el: '', voice: '', wall: 'valley', music: false };
+  try { var saved = JSON.parse(store('call.cfg') || '{}'); for (var k in CFG) if (saved[k] !== undefined && saved[k] !== '') CFG[k] = saved[k]; } catch (e) {}
   if (!WALLS[CFG.wall]) CFG.wall = 'valley';
   function saveCfg() { store('call.cfg', JSON.stringify(CFG)); }
+
+  var BASE = {};
+  var rootStyle = getComputedStyle(document.documentElement);
+  ['--fog','--fog-hua','--fog-blur','--a1','--a2','--bubble-ink','--ke-ink','--ke-zh','--ke-h','--hua-ink','--hua-dim','--hua-h','--head-ink','--head-dim','--head-bg','--foot-bg','--state-ink','--btn-bg','--btn-line','--sheet','--sheet-line','--lab-ke','--lab-hua','--hold']
+    .forEach(function (n) { BASE[n] = rootStyle.getPropertyValue(n).trim(); });
 
   function applyWall(id) {
     var w = WALLS[id];
     $('base').style.backgroundImage = 'url("' + w.src + '")';
+    for (var n in BASE) stage.style.setProperty(n, (w.colors && w.colors[n]) || BASE[n]);
     stage.style.setProperty('--bright', w.bright);
     stage.style.setProperty('--keTop', w.keTop);
     stage.style.setProperty('--huaTop', w.huaTop);
@@ -513,6 +646,19 @@ var WALLS = {
   });
   $('close').addEventListener('click', function () { openSheet(drawer, false); handle.setAttribute('aria-expanded', 'false'); });
 
+  // ---------- 背景音乐：默认关；我说话时压低，她按住说话时停 ----------
+  var bgm = new Audio('music/bgm.mp3');
+  bgm.loop = true; bgm.volume = .35;
+  var duck = 0;                                   // 0 正常；1 压低（我在说）；2 停（她在说）
+  function musicSync() {
+    musicBtn.setAttribute('aria-pressed', String(!!CFG.music));
+    if (!CFG.music || duck === 2) { bgm.pause(); return; }
+    bgm.volume = duck === 1 ? .08 : .35;
+    bgm.play().catch(function () {});
+  }
+  musicBtn.addEventListener('click', function () { CFG.music = !CFG.music; saveCfg(); musicSync(); });
+  musicBtn.setAttribute('aria-pressed', String(!!CFG.music));
+
   // ---------- 计时 ----------
   var secs = 0, live = false;
   function paint() { var m = Math.floor(secs / 60), s = secs % 60; clock.textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s; }
@@ -549,7 +695,13 @@ var WALLS = {
       catch (e) { ok(null); }
     });
   }
-  function dbPut(row) { try { if (db && row.id != null) db.transaction('lines', 'readwrite').objectStore('lines').put(row); } catch (e) {} }
+  function dbPut(row) {
+    try {
+      if (!db || row.id == null) return;
+      var copy = { id: row.id, who: row.who, text: row.text, zh: row.zh, stamp: row.stamp, audio: row.audio, dur: row.dur };
+      db.transaction('lines', 'readwrite').objectStore('lines').put(copy);
+    } catch (e) {}
+  }
   function dbAll() {
     return new Promise(function (ok) {
       if (!db) return ok([]);
@@ -580,7 +732,7 @@ var WALLS = {
     var d = new Date();
     var row = { who: who, text: text, zh: zh || '', stamp: (d.getMonth() + 1) + '/' + d.getDate() + ' ' + d.toTimeString().slice(0, 5), audio: null, dur: 0 };
     render(row);
-    dbAdd(row).then(function (id) { if (id != null) { row.id = id; if (row.audio) dbPut(row); } });
+    dbAdd({ who: row.who, text: row.text, zh: row.zh, stamp: row.stamp, audio: null, dur: 0 }).then(function (id) { if (id != null) { row.id = id; if (row.audio) dbPut(row); } });
     return row;
   }
   var lastKeRow = null;
@@ -662,8 +814,6 @@ var WALLS = {
     if (row.zh) { var b = document.createElement('span'); b.className = 'zh'; b.textContent = row.zh; subs.appendChild(b); }
     subs.hidden = false;
   }
-
-  // 有 ElevenLabs 就先把声音取回来存着，点的时候直接放、时长也准；没有就用手机自带的声音
   function prepare(row) {
     if (row.audio || !CFG.el || !CFG.voice) return Promise.resolve(row);
     if (row._p) return row._p;
@@ -688,23 +838,25 @@ var WALLS = {
     }).then(function (r) { bubble.classList.remove('loading'); row._p = null; return r; });
     return row._p;
   }
-
   function stopPlay() {
     try { audio.pause(); } catch (e) {}
     try { speechSynthesis.cancel(); } catch (e) {}
     bubble.classList.remove('playing');
     playingRow = null;
+    if (duck === 1) { duck = 0; musicSync(); }
   }
   function play(row) {
     if (playingRow === row) { stopPlay(); lightOff(600); return; }
     stopPlay();
     playingRow = row;
+    duck = 1; musicSync();
     if (row === lastKeRow) { bubble.classList.remove('unread'); bubble.classList.add('playing'); setSubs(row); sayKe.classList.add('on'); }
     light('ke');
     var done = function () {
       if (playingRow !== row) return;
       playingRow = null;
       bubble.classList.remove('playing');
+      duck = 0; musicSync();
       lightOff(1400);
     };
     prepare(row).then(function () {
@@ -730,7 +882,6 @@ var WALLS = {
   // ---------- 按住说话 ----------
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   var rec = null, holding = false, finals = [], interim = '', downAt = 0, cancelled = false, startY = 0;
-
   function startRec() {
     rec = new SR();
     rec.lang = 'zh-CN'; rec.continuous = true; rec.interimResults = true;
@@ -756,13 +907,14 @@ var WALLS = {
   function showHer(text, partial) {
     sayHua.classList.toggle('partial', !!partial);
     sayHua.textContent = text;
-    sayHua.classList.toggle('on', !!text);
+    sayHuaWrap.classList.toggle('on', !!text);
   }
   function finish() {
     var text = (finals.join('') + interim).trim();
     finals = []; interim = '';
     holdBtn.classList.remove('down', 'cancel');
     holdBtn.textContent = '按住 说话';
+    duck = 0; musicSync();
     if (cancelled) { showHer('', false); status('取消了'); lightOff(); return; }
     if (!text) { showHer('', false); status(Date.now() - downAt < 600 ? '按久一点再说' : '没听清 · 再按住说一次'); lightOff(); return; }
     showHer(text, false);
@@ -776,6 +928,7 @@ var WALLS = {
     ev.preventDefault();
     if (!SR) { status('这个浏览器听不了 · 用安卓 Chrome 打开'); return; }
     stopPlay();
+    duck = 2; musicSync();
     holding = true; cancelled = false; finals = []; interim = ''; downAt = Date.now();
     startY = ev.clientY || 0;
     try { holdBtn.setPointerCapture(ev.pointerId); } catch (e) {}
@@ -813,6 +966,7 @@ var WALLS = {
       stage.setAttribute('data-who', 'idle');
       try { audio.play().catch(function () {}); } catch (e) {}
       try { speechSynthesis.speak(new SpeechSynthesisUtterance('')); } catch (e) {}
+      duck = 0; musicSync();
       status('接通中…');
       ghGet('ke.json').then(function (cur) {
         keSeen = cur && cur.data && typeof cur.data.seq === 'number' ? cur.data.seq : 0;
@@ -826,9 +980,9 @@ var WALLS = {
       });
     } else {
       live = false; holding = false;
-      clearInterval(pollT); stopPlay();
+      clearInterval(pollT); stopPlay(); bgm.pause();
       try { rec && rec.abort(); } catch (e) {}
-      sayHua.classList.remove('on');
+      sayHuaWrap.classList.remove('on');
       stage.setAttribute('data-who', 'ended');
       callBtn.textContent = '接通'; callBtn.classList.remove('hang');
       holdBtn.hidden = true;
