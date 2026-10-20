@@ -69,7 +69,7 @@ header{
   text-shadow: 0 1px 8px rgba(var(--head-bg),.9);
 }
 #music{
-  position: absolute; top: max(22px, env(safe-area-inset-top, 0px));
+  position: absolute; z-index: 5; top: max(22px, env(safe-area-inset-top, 0px));
   right: max(14px, env(safe-area-inset-right, 0px));
   width: 38px; height: 38px; padding: 0; font-size: 1rem; letter-spacing: 0;
 }
@@ -246,7 +246,7 @@ button.hang{ background: var(--hang); border-color: rgba(255,190,180,.55); color
   <div class="say" id="sayHuaWrap"><div class="fog" id="sayHua" aria-live="polite"></div></div>
 
   <div id="bottom">
-    <div id="state">还没接通 · 版本 4</div>
+    <div id="state">还没接通 · 版本 5</div>
     <div id="controls">
       <button id="call" type="button">接通</button>
       <button id="hold" type="button" hidden>按住 说话</button>
@@ -886,7 +886,7 @@ var WALLS = {
   var rec = null, holding = false, finals = [], interim = '', downAt = 0, cancelled = false, startY = 0, recErr = '', heard = false;
   function startRec() {
     rec = new SR();
-    rec.lang = 'zh-CN'; rec.continuous = true; rec.interimResults = true;
+    rec.lang = 'zh-CN'; rec.continuous = false; rec.interimResults = true;
     rec.onaudiostart = function () { heard = true; status('在听 · 上滑取消'); };
     rec.onresult = function (ev) {
       var part = '';
@@ -898,14 +898,16 @@ var WALLS = {
       showHer(finals.join('') + interim, true);
     };
     rec.onerror = function (ev) {
+      if (ev.error === 'no-speech' && holding) return;          // 还按着，只是停顿了一下
       recErr = ev.error || 'unknown';
       if (recErr === 'not-allowed' || recErr === 'service-not-allowed') holding = false;
     };
     rec.onend = function () {
-      if (holding) { try { startRec(); } catch (e) {} return; }   // 还按着就接着听（安卓会自己断）
+      if (holding) { setTimeout(function () { if (holding) startRec(); else finish(); }, 250); return; }   // 还按着就接着听（安卓说完一句就会断）
       finish();
     };
     try { rec.start(); } catch (e) { recErr = 'start:' + e.name; }
+    if (recErr === 'aborted' && (finals.length || interim)) recErr = '';
   }
   var ERR = {
     'network': '语音识别连不上谷歌 · 梯子切到全局再试',
@@ -922,6 +924,7 @@ var WALLS = {
     sayHuaWrap.classList.toggle('on', !!text);
   }
   function finish() {
+    if (finals.length || interim) recErr = '';
     var text = (finals.join('') + interim).trim();
     finals = []; interim = '';
     holdBtn.classList.remove('down', 'cancel');
@@ -982,8 +985,6 @@ var WALLS = {
       callBtn.textContent = '挂断'; callBtn.classList.add('hang');
       holdBtn.hidden = false;
       stage.setAttribute('data-who', 'idle');
-      try { audio.play().catch(function () {}); } catch (e) {}
-      try { speechSynthesis.speak(new SpeechSynthesisUtterance('')); } catch (e) {}
       duck = 0; musicSync();
       status('接通中…');
       ghGet('ke.json').then(function (cur) {
