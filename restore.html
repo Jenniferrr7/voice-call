@@ -65,7 +65,7 @@
         say('需要补回：' + add.length + ' 条。');
         if (!add.length) { say('已经是全的，不用动。'); return; }
         var all = cur.map(function (r) { var x = Object.assign({}, r); delete x.id; x._ts = stampTs(r.stamp); return x; })
-          .concat(add.map(function (h) { return { who: h.who, text: h.text, zh: h.zh || '', stamp: h.stamp, audio: null, dur: 0, played: true, _ts: +new Date(h.ts) }; }));
+          .concat(add.map(function (h) { return { who: h.who, text: h.text, zh: h.zh || '', stamp: h.stamp, audio: null, dur: 0, played: true, _ts: stampTs(h.stamp) || +new Date(h.ts) }; }));
         all.sort(function (a, b) { return a._ts - b._ts; });
         return new Promise(function (ok, no) {
           var tx = db.transaction('lines', 'readwrite'), st = tx.objectStore('lines');

@@ -670,8 +670,8 @@ var WALLS = {
   function dbAdd(row) {
     return new Promise(function (ok) {
       if (!db) return ok(null);
-      try { var r = db.transaction('lines', 'readwrite').objectStore('lines').add(plain(row)); r.onsuccess = function () { ok(r.result); }; r.onerror = function () { ok(null); }; }
-      catch (e) { ok(null); }
+      try { var r = db.transaction('lines', 'readwrite').objectStore('lines').add(plain(row)); r.onsuccess = function () { ok(r.result); }; r.onerror = function () { status('这条没存进手机（' + (r.error && r.error.name) + '）'); ok(null); }; }
+      catch (e) { status('这条没存进手机（' + e.name + '）'); ok(null); }
     });
   }
   function dbPut(row) {
@@ -781,7 +781,7 @@ var WALLS = {
   var audio = new Audio(), playingRow = null;
   // 方括号音频标签（[exhales] 之类）只有 eleven_v4／eleven_v3 认；别的模型会把词念出来。带标签的那一条走 v4（不通退 v3），其余照旧 v2。
   function hasTag(t) { return /\[[^\]]+\]/.test(t || ''); }
-  function plain(t) { return String(t || '').replace(/\[[^\]]*\]/g, ' ').replace(/\s+/g, ' ').trim(); }
+  function stripTags(t) { return String(t || '').replace(/\[[^\]]*\]/g, ' ').replace(/\s+/g, ' ').trim(); }
   function prepare(row) {
     if (row.audio || !CFG.el || !CFG.voice) return Promise.resolve(row);
     if (row._p) return row._p;
@@ -843,8 +843,8 @@ var WALLS = {
       if (row.audio) {
         audio.src = URL.createObjectURL(row.audio);
         audio.onended = done; audio.onerror = done;
-        audio.play().catch(function () { systemVoice(plain(row.text), done); });
-      } else systemVoice(plain(row.text), done);
+        audio.play().catch(function () { systemVoice(stripTags(row.text), done); });
+      } else systemVoice(stripTags(row.text), done);
     });
   }
   function systemVoice(text, done) {
