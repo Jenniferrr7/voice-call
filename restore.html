@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>找回聊天记录</title>
+<style>
+  body { margin: 0; background: #0b0b06; color: #f6f0e0; font: 16px/1.8 "Noto Serif SC","Songti SC","Source Han Serif SC",Georgia,serif; padding: 28px 22px; }
+  h1 { font-size: 21px; font-weight: 600; margin: 0 0 10px; }
+  p { color: #c6beac; margin: 8px 0; }
+  button { background: #f9de83; color: #0b0b06; border: 0; border-radius: 999px; padding: 14px 30px; font: inherit; font-weight: 600; margin: 18px 0 6px; }
+  button[disabled] { opacity: .5; }
+  #log { white-space: pre-wrap; color: #f6f0e0; margin-top: 14px; }
+  a { color: #f9de83; }
+</style>
+</head>
+<body>
+<h1>找回聊天记录</h1>
+<p>把存在私有信箱里的历史，灌回这台手机上的通话页。已经有的不会重复，已经存好的语音也不会动。</p>
+<button id="go" type="button">开始找回</button>
+<div id="log"></div>
+<p><a href="./">回通话页</a></p>
+<script>
+(function () {
+  var log = document.getElementById('log'), go = document.getElementById('go');
+  function say(t) { log.textContent += t + '\n'; }
+  function cfg() { try { return JSON.parse(localStorage.getItem('call.cfg') || '{}'); } catch (e) { return {}; } }
+  function stampTs(s) {
+    var m = /^(\d+)\/(\d+)\s+(\d+):(\d+)/.exec(s || '');
+    return m ? new Date(2026, +m[1] - 1, +m[2], +m[3], +m[4]).getTime() : 0;
+  }
+  function openDb() {
+    return new Promise(function (ok, no) {
+      var r = indexedDB.open('call', 1);
+      r.onupgradeneeded = function () { r.result.createObjectStore('lines', { keyPath: 'id', autoIncrement: true }); };
+      r.onsuccess = function () { ok(r.result); };
+      r.onerror = function () { no(r.error || new Error('打不开这台手机上的记录库')); };
+    });
+  }
+  function getAll(db) {
+    return new Promise(function (ok, no) {
+      var r = db.transaction('lines').objectStore('lines').getAll();
+      r.onsuccess = function () { ok(r.result || []); };
+      r.onerror = function () { no(r.error); };
+    });
+  }
+  function fetchHistory(c) {
+    return fetch('https://api.github.com/repos/' + (c.repo || 'Jenniferrr7/voice-call-data-') + '/contents/history.json', {
+      headers: { 'Authorization': 'Bearer ' + c.gh, 'Accept': 'application/vnd.github.raw+json' }
+    }).then(function (r) { if (!r.ok) throw new Error('GitHub ' + r.status); return r.json(); });
+  }
+  go.addEventListener('click', function () {
+    go.disabled = true; log.textContent = '';
+    var c = cfg();
+    if (!c.gh) { say('这台手机的通话页里没有存 GitHub 令牌。先回通话页，点设置把令牌填好，再来这里。'); go.disabled = false; return; }
+    try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().then(function (p) { say(p ? '已请求浏览器别随便清掉这里的记录。' : '浏览器没答应长期保存，记录可能还会被清。'); }); } catch (e) {}
+    say('正在从信箱取历史……');
+    Promise.all([fetchHistory(c), openDb()]).then(function (res) {
+      var hist = res[0], db = res[1];
+      return getAll(db).then(function (cur) {
+        say('信箱里的历史：' + hist.length + ' 条；这台手机上现有：' + cur.length + ' 条。');
+        var have = {};
+        cur.forEach(function (r) { have[r.who + '|' + String(r.text || '').trim()] = 1; });
+        var add = hist.filter(function (h) { return !have[h.who + '|' + String(h.text || '').trim()]; });
+        say('需要补回：' + add.length + ' 条。');
+        if (!add.length) { say('已经是全的，不用动。'); return; }
+        var all = cur.map(function (r) { var x = Object.assign({}, r); delete x.id; x._ts = stampTs(r.stamp); return x; })
+          .concat(add.map(function (h) { return { who: h.who, text: h.text, zh: h.zh || '', stamp: h.stamp, audio: null, dur: 0, played: true, _ts: +new Date(h.ts) }; }));
+        all.sort(function (a, b) { return a._ts - b._ts; });
+        return new Promise(function (ok, no) {
+          var tx = db.transaction('lines', 'readwrite'), st = tx.objectStore('lines');
+          st.clear();
+          all.forEach(function (x) { var y = Object.assign({}, x); delete y._ts; st.add(y); });
+          tx.oncomplete = function () { ok(); };
+          tx.onerror = function () { no(tx.error || new Error('写入出错')); };
+          tx.onabort = function () { no(tx.error || new Error('写入被中止，没有改动任何东西')); };
+        }).then(function () { say('补回了 ' + add.length + ' 条，现在一共 ' + all.length + ' 条。回通话页，把页面彻底关掉再打开一次就能看到。'); });
+      });
+    }).catch(function (e) { say('没成：' + e.message + '。这台手机上原来的记录没有被改动。'); })
+      .then(function () { go.disabled = false; });
+  });
+})();
+</script>
+</body>
+</html>

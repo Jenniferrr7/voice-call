@@ -661,7 +661,7 @@ var WALLS = {
       try {
         var r = indexedDB.open('call', 1);
         r.onupgradeneeded = function () { r.result.createObjectStore('lines', { keyPath: 'id', autoIncrement: true }); };
-        r.onsuccess = function () { db = r.result; ok(); };
+        r.onsuccess = function () { db = r.result; try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {} ok(); };
         r.onerror = function () { ok(); };
       } catch (e) { ok(); }
     });
