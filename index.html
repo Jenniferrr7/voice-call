@@ -779,21 +779,26 @@ var WALLS = {
 
   // ---------- 语音条 ----------
   var audio = new Audio(), playingRow = null;
-  // 方括号音频标签（[exhales] 之类）只有 eleven_v3 认；别的模型会把词念出来。带标签的那一条走 v3，其余照旧 v2。
+  // 方括号音频标签（[exhales] 之类）只有 eleven_v4／eleven_v3 认；别的模型会把词念出来。带标签的那一条走 v4（不通退 v3），其余照旧 v2。
   function hasTag(t) { return /\[[^\]]+\]/.test(t || ''); }
   function plain(t) { return String(t || '').replace(/\[[^\]]*\]/g, ' ').replace(/\s+/g, ' ').trim(); }
   function prepare(row) {
     if (row.audio || !CFG.el || !CFG.voice) return Promise.resolve(row);
     if (row._p) return row._p;
     if (row.pill) row.pill.classList.add('loading');
-    row._p = fetch('https://api.elevenlabs.io/v1/text-to-speech/' + encodeURIComponent(CFG.voice), {
-      method: 'POST',
-      headers: { 'xi-api-key': CFG.el, 'Content-Type': 'application/json', 'Accept': 'audio/mpeg' },
-      body: JSON.stringify({ text: row.text, model_id: hasTag(row.text) ? 'eleven_v3' : 'eleven_multilingual_v2' })
-    }).then(function (r) {
-      if (!r.ok) throw new Error('ElevenLabs ' + r.status);
-      return r.blob();
-    }).then(function (blob) {
+    // 带方括号标签的走 eleven_v4（官方现在推荐，标签沿用同一套）；v4 不通就退回 v3；没标签的照旧 v2。
+    function tts(model) {
+      return fetch('https://api.elevenlabs.io/v1/text-to-speech/' + encodeURIComponent(CFG.voice), {
+        method: 'POST',
+        headers: { 'xi-api-key': CFG.el, 'Content-Type': 'application/json', 'Accept': 'audio/mpeg' },
+        body: JSON.stringify({ text: row.text, model_id: model })
+      }).then(function (r) {
+        if (!r.ok) throw new Error('ElevenLabs ' + r.status);
+        return r.blob();
+      });
+    }
+    row._p = (hasTag(row.text) ? tts('eleven_v4').catch(function () { return tts('eleven_v3'); }) : tts('eleven_multilingual_v2'))
+    .then(function (blob) {
       row.audio = blob; dbPut(row);
       return new Promise(function (ok) {
         var a = new Audio(URL.createObjectURL(blob));
