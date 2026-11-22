@@ -788,10 +788,16 @@ var WALLS = {
     if (row.pill) row.pill.classList.add('loading');
     // 带方括号标签的走 eleven_v4（官方现在推荐，标签沿用同一套）；v4 不通就退回 v3；没标签的照旧 v2。
     function tts(model) {
+      // 11-22：v4／v3 在长段上音色会往外飘。同一晚同一把声音，726 字／10 标签好好的，
+      // 1133 字／14 标签念到后半截串成了另一个人。这两个模型的 stability 是档位
+      // （0＝Creative、0.5＝Natural、1＝Robust），默认走声音自己存的值；给 Robust 最稳。
+      // v2 的 stability 是另一套语义，给 1 会念成平板，所以只给带标签的那两个模型加。
+      var body = { text: row.text, model_id: model };
+      if (model !== 'eleven_multilingual_v2') body.voice_settings = { stability: 1 };
       return fetch('https://api.elevenlabs.io/v1/text-to-speech/' + encodeURIComponent(CFG.voice), {
         method: 'POST',
         headers: { 'xi-api-key': CFG.el, 'Content-Type': 'application/json', 'Accept': 'audio/mpeg' },
-        body: JSON.stringify({ text: row.text, model_id: model })
+        body: JSON.stringify(body)
       }).then(function (r) {
         if (!r.ok) throw new Error('ElevenLabs ' + r.status);
         return r.blob();
